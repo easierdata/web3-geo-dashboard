@@ -1,1 +1,1 @@
-# web3-landsat-dashboard-viewer
+# web3-geo-dashboard
