@@ -12,7 +12,7 @@
     </slot>
 </main>
 <footer>
-    <a href="/page1">Page 1</a>
-    <a href="/page2">Page 2</a>
+    <a href="/basic_component_example">Basic Component Example</a>
+    <a href="/prop_example">Prop Example</a>
     <img src="/easierLogo.png" alt="Easier logo" width=auto height="100">
 </footer>
