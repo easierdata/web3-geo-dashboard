@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
     import UpdateText from "../../lib/updateText.svelte";
-    let text = "Page 1 Prop";
-    let count = 0;
-</script>
+  
+    let text: string = "Page 1 Prop";
+    let count: number = 0;  
+  </script>
 
 <UpdateText {text} />
 
