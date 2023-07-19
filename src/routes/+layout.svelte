@@ -1,6 +1,6 @@
 <script lang="ts">
 	export let title: string = 'Title According to Layout Component';
-	import '../styles/global.css';
+	import '../global.css';
 </script>
 
 <header>
