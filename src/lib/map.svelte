@@ -13,25 +13,26 @@
 
 		map = new mapboxgl.Map({
 			container: 'map',
-			style: 'mapbox://styles/mapbox/streets-v11',
-			center: [-122.486052, 37.830348],
-			zoom: 15
+			style: 'mapbox://styles/jsolly/clkg6as3i002201r2d79a248x',
+			center: [-98.5795, 39.8283],
+			zoom: 3
 		});
 
 		map.on('load', function () {
-			map.addSource('US_STATES_OUTLINE', {
+			map.addSource('LANDSAT_SCENE_OUTLINES', {
 				type: 'vector',
-				url: 'mapbox://<tileset_id>'
+				url: 'mapbox://jsolly.cq2vdng6'
 			});
 
 			map.addLayer({
-				'id': 'US_STATES_OUTLINE-layer',
-				'type': 'fill', // You can modify this based on your specific needs
-				'source': 'US_STATES_OUTLINE',
-				'source-layer': '<layer_name>', 
-				'paint': {
-					'fill-color': '#888888',
-					'fill-opacity': 0.4
+				id: 'LANDSAT_SCENE_OUTLINES-layer',
+				type: 'fill',
+				source: 'LANDSAT_SCENE_OUTLINES',
+				'source-layer': 'landsat_scenes_intersecting_c-22roct',
+				paint: {
+					'fill-color': 'transparent',
+					'fill-opacity': 1,
+					'fill-outline-color': 'green'
 				}
 			});
 		});
