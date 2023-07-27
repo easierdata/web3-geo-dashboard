@@ -11,7 +11,9 @@
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
-		"format": "prettier --plugin-search-dir . --write ."
+		"format": "prettier --plugin-search-dir . --write .",
+		"lint-format-fix": "eslint . --fix && prettier --plugin-search-dir . --write .",
+		"prepare": "husky install"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
@@ -25,6 +27,7 @@
 		"eslint-plugin-svelte": "^2.30.0",
 		"husky": "^8.0.3",
 		"jsdom": "^22.1.0",
+		"lint-staged": "^13.2.3",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.10.1",
 		"svelte": "^4.0.0",
@@ -34,6 +37,12 @@
 		"typescript": "^5.1.6",
 		"vite": "^4.3.6",
 		"vitest": "^0.32.2"
+	},
+	"lint-staged": {
+		"*.{js,ts,svelte}": [
+			"eslint",
+			"prettier --write"
+		]
 	},
 	"type": "module",
 	"dependencies": {
