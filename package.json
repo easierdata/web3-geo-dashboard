@@ -15,8 +15,10 @@
 		"prepare": "husky install"
 	},
 	"lint-staged": {
-		"src/**/*.{js,ts,svelte,json,css}": [
-			"eslint"
+		"*": [
+			"prettier --plugin-search-dir . --write .",
+			"eslint . --max-warnings=0",
+			"git add ."
 		]
 	},
 	"devDependencies": {
