@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { expect, test } from 'vitest';
-import Hello from '../src/lib/hello.svelte';
+import Hello from '../../src/lib/hello.svelte';
 
 test('hello', async () => {
 	const { container } = render(Hello, { props: { count: 2 } });

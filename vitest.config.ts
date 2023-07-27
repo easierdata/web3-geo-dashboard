@@ -6,7 +6,7 @@ export default defineConfig({
 	test: {
 		coverage: {
 			provider: 'v8',
-			reporter: ['lcov', ['text', { skipFull: true }]]
+			reporter: ['lcov', 'text', 'html']
 		},
 		environment: 'jsdom'
 	}
