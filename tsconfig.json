@@ -8,8 +8,14 @@
 		"noUnusedParameters": true,
 		"allowSyntheticDefaultImports": true // For Mapbox GL
 	},
-	"include": ["src/**/*"],
-	"exclude": ["node_modules"]
+	"include": [
+		"src/**/*",
+		"test",
+		"tsconfig.json",
+		"package.json",
+		"vitetest.config.js",
+		"vite.config.js"
+	]
 }
 
 // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
