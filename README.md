@@ -1,3 +1,6 @@
+[![web3GeoDashboardDeploy](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml/badge.svg)](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml)
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
+
 # create-svelte
 
 Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
