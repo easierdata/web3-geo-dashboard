@@ -10,10 +10,16 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
-		"lint": "prettier --plugin-search-dir . --check . && eslint .",
+		"lint": "prettier --plugin-search-dir . --check . && eslint . --max-warnings=0",
 		"format": "prettier --plugin-search-dir . --write .",
-		"lint-format-fix": "eslint . --fix && prettier --plugin-search-dir . --write .",
 		"prepare": "husky install"
+	},
+	"lint-staged": {
+		"src/**/*.{js,ts,svelte,json,css}": [
+			"prettier --write",
+			"npm run lint",
+			"git add"
+		]
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
@@ -37,12 +43,6 @@
 		"typescript": "^5.1.6",
 		"vite": "^4.3.6",
 		"vitest": "^0.32.2"
-	},
-	"lint-staged": {
-		"*.{js,ts,svelte,json}": [
-			"eslint --fix",
-			"prettier --plugin-search-dir . --write"
-		]
 	},
 	"type": "module",
 	"dependencies": {
