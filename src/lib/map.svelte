@@ -30,9 +30,9 @@
 				source: 'LANDSAT_SCENE_OUTLINES',
 				'source-layer': 'landsat_scenes_intersecting_c-22roct',
 				paint: {
-					'fill-color': 'transparent',
-					'fill-opacity': 1,
-					'fill-outline-color': 'green'
+					'fill-color': 'grey',
+					'fill-opacity': 0.2,
+					'fill-outline-color': 'black'
 				}
 			});
 		});
