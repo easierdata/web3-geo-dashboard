@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let text: string = 'UpdateText Component';
+	export let text = 'UpdateText Component';
 
 	const updateText = () => {
 		text = 'Updated!';
