@@ -7,7 +7,6 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"allowSyntheticDefaultImports": true // For Mapbox GL
-		
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules"]
