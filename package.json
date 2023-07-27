@@ -16,9 +16,7 @@
 	},
 	"lint-staged": {
 		"src/**/*.{js,ts,svelte,json,css}": [
-			"prettier --write",
-			"npm run lint",
-			"git add"
+			"eslint"
 		]
 	},
 	"devDependencies": {
