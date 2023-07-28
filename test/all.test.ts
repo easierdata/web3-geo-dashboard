@@ -16,6 +16,5 @@ test('Popup component should render', async () => {
 
 test('UpdateText component should render with default text', async () => {
 	const { container } = render(UpdateText);
-	console.log(container.innerHTML);
 	expect(container.innerHTML).toContain('Update Text');
 });
