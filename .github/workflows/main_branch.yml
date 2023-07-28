@@ -2,10 +2,10 @@ name: 'Main Branch Deploy'
 
 on:
   push:
-  pull_request:
-    branches: ['main']
+    branches:
+      - main
   schedule:
-    - cron: '0 3 * * 0-6'
+    - cron: '0 3 * * 0-6' # Every day at 3am UTC
 
 jobs:
   analyze:
@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ['javascript']
+        language: ['javascript', 'typescript', 'python']
 
     steps:
       - uses: actions/checkout@v3

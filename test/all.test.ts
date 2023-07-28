@@ -14,20 +14,7 @@ test('Popup component should render', async () => {
 	expect(container.innerHTML).not.toBe('');
 });
 
-// <script lang="ts">
-// 	export let text = 'UpdateText Component';
-
-// 	const updateText = () => {
-// 		text = 'Updated!';
-// 	};
-// </script>
-
-// <button on:click={updateText}> Update Text </button>
-
-// <input type="text" bind:value={text} />
-
 test('UpdateText component should render with default text', async () => {
 	const { container } = render(UpdateText);
-	console.log(container.innerHTML);
 	expect(container.innerHTML).toContain('Update Text');
 });
