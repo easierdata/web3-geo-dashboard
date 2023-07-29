@@ -1,4 +1,7 @@
 [![web3GeoDashboardDeploy](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml/badge.svg)](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml)
+![Formatting](https://img.shields.io/badge/formatting-prettier-56b3b4.svg)
+![Linting](https://img.shields.io/badge/linting-eslint-4c32bf.svg)
+![UnitTesting](https://img.shields.io/badge/unit%20testing-vitest-ffce27.svg)
 [![License](https://img.shields.io/:license-mit-blue.svg?style=flat-square)](https://badges.mit-license.org)
 
 ## Developing
