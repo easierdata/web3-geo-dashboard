@@ -1,7 +1,8 @@
 [![web3GeoDashboardDeploy](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml/badge.svg)](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml)
-[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
+[![License](https://img.shields.io/:license-mit-blue.svg?style=flat-square)](https://badges.mit-license.org)
 
 ## Developing
+
 Once you've cloned the project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
 ```shell
@@ -22,7 +23,6 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
-
 
 ## Contributing
 
@@ -46,17 +46,20 @@ You can preview the production build with `npm run preview`.
   <a href="https://github.com/easierdata/web3-geo-dashboard/compare" rel="noopener noreferrer" target="_blank">
   `https://github.com/easierdata/web3-geo-dashboard/compare`</a>.
 
-
 ## Pre-commit Hooks
+
 When running `npm install` the `prepare` script runs to install husky pre-commit hooks into `./husky/pre-commit`. Currently the hook automatically formats the code using prettier, then checks the code for linting issues. If there is a linting issue, it doesn't try to fix it. Instead, the commit fails with an error message.
 
 If you want to make sure the pre-commit hooks are working, do the following
-1. Stage some badly linted/formatted code 
-2. run `npx lint-staged` 
-If there were only formatting issues, the hook will format your code and silently add it to the commit. If there were linting issues, the commit should fail.
+
+1. Stage some badly linted/formatted code
+2. run `npx lint-staged`
+   If there were only formatting issues, the hook will format your code and silently add it to the commit. If there were linting issues, the commit should fail.
 
 ## Testing and Coverage
+
 Tests are located in `/test` and are using Vitetest. Please write at least one test per component. This way, we can do broad refactorings and find out very quickly what is broken.
+
 ```shell
 npm run test
 npm run coverage
