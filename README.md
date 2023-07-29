@@ -39,7 +39,7 @@ You can preview the production build with `npm run preview`.
 ### Step 2
 
 - **HACK AWAY!** 🔨🔨🔨
-https://github.com/easierdata/web3-geo-dashboard/compare
+
 ### Step 3
 
 - 🔃 Create a new pull request using:
