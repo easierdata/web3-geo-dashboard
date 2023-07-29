@@ -48,7 +48,7 @@ You can preview the production build with `npm run preview`.
 
 
 ## Pre-commit Hooks
-When running `npm install` the `prepare` script runs to install husky pre-commit hooks. Currently the hook automatically formats the code using prettier, then checks the code for linting issues. If there is a linting issue, it doesn't try to fix it. Instead, the commit fails with an error message.
+When running `npm install` the `prepare` script runs to install husky pre-commit hooks into `./husky/pre-commit`. Currently the hook automatically formats the code using prettier, then checks the code for linting issues. If there is a linting issue, it doesn't try to fix it. Instead, the commit fails with an error message.
 
 If you want to make sure the pre-commit hooks are working, do the following
 1. Stage some badly linted/formatted code 
