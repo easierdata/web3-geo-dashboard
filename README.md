@@ -1,27 +1,10 @@
 [![web3GeoDashboardDeploy](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml/badge.svg)](https://github.com/easierdata/web3-geo-dashboard/actions/workflows/main_branch.yml)
 [![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
 
-# create-svelte
-
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
 ## Developing
+Once you've cloned the project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
+```shell
 npm run dev
 
 # or start the server and open the app in a new browser tab
@@ -32,10 +15,49 @@ npm run dev -- --open
 
 To create a production version of your app:
 
-```bash
+```shell
 npm run build
 ```
 
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+
+## Contributing
+
+### Step 1
+
+- **Option 1**
+
+  - 🍴 Fork this repo!
+
+- **Option 2**
+  - 👯 Clone to your local machine using:
+    `https://github.com/jsolly/blogthedata.git`
+
+### Step 2
+
+- **HACK AWAY!** 🔨🔨🔨
+https://github.com/easierdata/web3-geo-dashboard/compare
+### Step 3
+
+- 🔃 Create a new pull request using:
+  <a href="https://github.com/easierdata/web3-geo-dashboard/compare" rel="noopener noreferrer" target="_blank">
+  `https://github.com/easierdata/web3-geo-dashboard/compare`</a>.
+
+
+## Pre-commit Hooks
+When running `npm install` the `prepare` script runs to install husky pre-commit hooks. Currently the hook automatically formats the code using prettier, then checks the code for linting issues. If there is a linting issue, it doesn't try to fix it. Instead, the commit fails with an error message.
+
+If you want to make sure the pre-commit hooks are working, do the following
+1 - Stage some badly linted/formatted code 
+2 - run `npx lint-staged` 
+If there were only formatting issues, the hook will format your code and silently add it to the commit. If there were linting issues, the commit should fail.
+
+## Testing and Coverage
+Tests are located in `/test` and are using Vitetest. Please write at least one test per component. This way, we can do broad refactorings and find out very quickly what is broken.
+```shell
+npm run test
+npm run coverage
+```
