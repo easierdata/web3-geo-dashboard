@@ -10,9 +10,12 @@ def get_intersecting_scenes(
     Reset index because features may be dropped during intersection.
     """
     geom = geom.to_crs(study_area.crs)
+
+    # Dissolve geometry to a single feature to speed up intersection and avoid duplicate scenes
+    dissolved_study_area = study_area.dissolve()
     
     # Use Intersects instead of clip to maintain whole scenes
-    intersecting_scenes = sjoin(geom, study_area, how="inner", op="intersects") 
+    intersecting_scenes = sjoin(geom, dissolved_study_area, how="inner", predicate="intersects") 
     intersecting_scenes.reset_index(inplace=True, drop=True)
     return intersecting_scenes
 
