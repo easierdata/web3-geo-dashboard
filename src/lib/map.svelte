@@ -1,5 +1,5 @@
 <script lang="ts">
-	import mapboxgl, { Map } from 'mapbox-gl';
+	import mapboxgl, { Map, Popup } from 'mapbox-gl';
 	import { onMount, onDestroy } from 'svelte';
 
 	let map: Map;
@@ -34,6 +34,40 @@
 					'fill-opacity': 0.2,
 					'fill-outline-color': 'black'
 				}
+			});
+			// When a click event occurs on a feature in the places layer, open a popup at the
+			// location of the feature, with description HTML from its properties.
+			map.on('click', 'LANDSAT_SCENE_OUTLINES-layer', (e) => {
+				const coordinates = e.lngLat;
+				if (!e.features || !e.features.length) {
+					console.warn('No features found. Click event ignored.');
+					return;
+				}
+				const feature = e.features[0];
+				if (!feature || !feature.properties) {
+					console.warn('Feature or feature properties are not defined. Click event ignored.');
+					return;
+				}
+				const popup_content = `
+					Popup Title<br>
+					CID: QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB<br>
+					Row: ${feature.properties.ROW}<br>
+					Path ${feature.properties.PATH}<br>
+					Date acquired: July 26th, 2023<br>
+					Pinned on 5 IPFS nodes<br>
+					Stored in 3 Filecoin deals<br>
+					2 unsealed copies available<br>
+					`;
+				new mapboxgl.Popup().setLngLat(coordinates).setHTML(popup_content).addTo(map);
+			});
+			// Change the cursor to a pointer when the mouse is over the places layer.
+			map.on('mouseenter', 'LANDSAT_SCENE_OUTLINES-layer', () => {
+				map.getCanvas().style.cursor = 'pointer';
+			});
+
+			// Change it back to a pointer when it leaves.
+			map.on('mouseleave', 'LANDSAT_SCENE_OUTLINES-layer', () => {
+				map.getCanvas().style.cursor = '';
 			});
 		});
 	});
