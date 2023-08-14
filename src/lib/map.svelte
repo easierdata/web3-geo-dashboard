@@ -1,20 +1,21 @@
 <script lang="ts">
 	import mapboxgl, { Map } from 'mapbox-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import type { Web3EnrichedMapboxFeature } from '../types';
 
 	let map: Map;
 
-	function createPopupContent(properties: { [name: string]: any }): string {
-		const row = properties.ROW ?? 'Unknown';
-		const path = properties.PATH ?? 'Unknown';
+	function createPopupContent(feature: Web3EnrichedMapboxFeature): string {
+		const properties = feature.properties;
 		return `
-		Popup Title<br>
-		CID: QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB<br>
-		Row: ${row}<br>
-		Path ${path}<br>
+		<b>Popup Title</b><br>
+		<span class="cid-text">CID: QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB</span><br>
+		Row: ${properties.ROW}<br>
+		Path ${properties.PATH}<br>
 		Date acquired: July 26th, 2023<br>
 		Pinned on 5 IPFS nodes<br>
 		Stored in 3 Filecoin deals<br>
+		Available on S3: Yes ✅<br>
 		2 unsealed copies available<br>
 		<button id="button1">Pin to local</button>
 		<button id="button2">Download Scene</button>
@@ -41,7 +42,7 @@
 		});
 	}
 
-	function handleClick(e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) {
+	function handleClick(e: mapboxgl.MapMouseEvent & { features?: Web3EnrichedMapboxFeature[] }) {
 		const coordinates = e.lngLat;
 		if (!e.features || !e.features.length) {
 			console.warn('No features found. Click event ignored.');
@@ -52,7 +53,7 @@
 			console.warn('Feature or feature properties are not defined. Click event ignored.');
 			return;
 		}
-		const popup_content = createPopupContent(feature.properties);
+		const popup_content = createPopupContent(feature);
 		new mapboxgl.Popup().setLngLat(coordinates).setHTML(popup_content).addTo(map);
 	}
 
