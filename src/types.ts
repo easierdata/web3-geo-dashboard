@@ -18,3 +18,9 @@ interface CustomFeatureProperties {
 export interface Web3EnrichedMapboxFeature extends mapboxgl.MapboxGeoJSONFeature {
 	properties: CustomFeatureProperties;
 }
+
+export interface metadata {
+	ipfs: number;
+	filecoin: number;
+	unsealed: number;
+}

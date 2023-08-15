@@ -1,22 +1,45 @@
 <script lang="ts">
 	import mapboxgl, { Map } from 'mapbox-gl';
 	import { onMount, onDestroy } from 'svelte';
-	import type { Web3EnrichedMapboxFeature } from '../types';
+	import type { Web3EnrichedMapboxFeature, metadata } from '../types';
 
 	let map: Map;
 
-	function createPopupContent(feature: Web3EnrichedMapboxFeature): string {
+	async function getPopupMetadata(cid: string): Promise<metadata> {
+		const requestOptions: RequestInit = {
+			method: 'GET',
+			redirect: 'follow' as RequestRedirect
+		};
+
+		try {
+			const response = await fetch(`http://localhost:7777/api/metadata/${cid}`, requestOptions);
+			if (!response.ok) {
+				throw new Error(`Error fetching metadata for CID ${cid}: ${response.statusText}`);
+			}
+			const data: metadata = await response.json();
+			return data;
+		} catch (error) {
+			console.error(`Failed to fetch metadata for CID ${cid}:`, error);
+			throw error;
+		}
+	}
+
+	async function createPopupContent(feature: Web3EnrichedMapboxFeature): Promise<string> {
 		const properties = feature.properties;
+		const metadata = await getPopupMetadata(properties.CID);
+		const test = 22;
+		console.log(test);
+
 		return `
 		<b>Popup Title</b><br>
 		<span class="cid-text">CID: QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB</span><br>
 		Row: ${properties.ROW}<br>
 		Path ${properties.PATH}<br>
 		Date acquired: July 26th, 2023<br>
-		Pinned on 5 IPFS nodes<br>
-		Stored in 3 Filecoin deals<br>
+		Pinned on ${metadata.ipfs} IPFS nodes<br>
+		Stored in ${metadata.filecoin} Filecoin deals<br>
 		Available on S3: Yes ✅<br>
-		2 unsealed copies available<br>
+		${metadata.unsealed} unsealed copies available<br>
 		<button id="button1">Pin to local</button>
 		<button id="button2">Download Scene</button>
 		<button id="button3">Fetch from cold storage</button>
