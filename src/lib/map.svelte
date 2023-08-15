@@ -57,19 +57,6 @@
 		}
 	}
 
-	// async function fetchFromColdStorage() {
-	// 	if (window.ethereum) {
-	// 		return;
-	// 		// Add logic here to interact with the contract or perform other actions
-	// 		// const provider = new ethers.BrowserProvider(window.ethereum);
-	// 		//await window.ethereum.request({ method: 'eth_requestAccounts' });
-	// 		// const signer = await provider.getSigner();
-	// 		// const connectedAccount = await signer.getAddress();
-	// 	} else {
-	// 		alert('Metamask not detected!');
-	// 	}
-	// }
-
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
 			type: 'vector',
