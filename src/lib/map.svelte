@@ -1,10 +1,10 @@
 <script lang="ts">
 	import mapboxgl, { Map } from 'mapbox-gl';
+	import { ethers } from 'ethers';
 	import { onMount, onDestroy } from 'svelte';
 	import type { Web3EnrichedMapboxFeature } from '../types';
 
 	let map: Map;
-
 	function createPopupContent(feature: Web3EnrichedMapboxFeature): string {
 		const properties = feature.properties;
 		return `
@@ -19,9 +19,56 @@
 		2 unsealed copies available<br>
 		<button id="button1">Pin to local</button>
 		<button id="button2">Download Scene</button>
-		<button id="button3">Fetch from cold storage</button>
+		<div class="MetamaskContainer">
+			<button class="connectButton">Fetch from cold storage</button>
+			<div class="connectedState" style="display: none;">Connected</div>
+		</div>
 		`;
 	}
+
+	async function connectWallet(): Promise<void> {
+		if (window.ethereum) {
+			await window.ethereum.request({ method: 'eth_requestAccounts' });
+			const provider = new ethers.BrowserProvider(window.ethereum);
+			const signer = await provider.getSigner();
+
+			// Add logic here to interact with the contract or perform other actions
+			// const provider = new ethers.BrowserProvider(window.ethereum);
+
+			const connectButton = document.querySelector(
+				'.MetamaskContainer .connectButton'
+			) as HTMLButtonElement;
+			const connectedState = document.querySelector(
+				'.MetamaskContainer .connectedState'
+			) as HTMLDivElement;
+
+			if (connectButton) {
+				connectButton.style.display = 'none';
+			}
+
+			if (connectedState) {
+				connectedState.style.display = 'block';
+			}
+
+			const connectedAccount = await signer.getAddress();
+			console.log(connectedAccount);
+		} else {
+			alert('Metamask not detected!');
+		}
+	}
+
+	// async function fetchFromColdStorage() {
+	// 	if (window.ethereum) {
+	// 		return;
+	// 		// Add logic here to interact with the contract or perform other actions
+	// 		// const provider = new ethers.BrowserProvider(window.ethereum);
+	// 		//await window.ethereum.request({ method: 'eth_requestAccounts' });
+	// 		// const signer = await provider.getSigner();
+	// 		// const connectedAccount = await signer.getAddress();
+	// 	} else {
+	// 		alert('Metamask not detected!');
+	// 	}
+	// }
 
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
@@ -44,17 +91,23 @@
 
 	function handleClick(e: mapboxgl.MapMouseEvent & { features?: Web3EnrichedMapboxFeature[] }) {
 		const coordinates = e.lngLat;
-		if (!e.features || !e.features.length) {
-			console.warn('No features found. Click event ignored.');
-			return;
-		}
+		if (!e.features || !e.features.length) return;
 		const feature = e.features[0];
-		if (!feature || !feature.properties) {
-			console.warn('Feature or feature properties are not defined. Click event ignored.');
-			return;
-		}
+		if (!feature || !feature.properties) return;
 		const popup_content = createPopupContent(feature);
 		new mapboxgl.Popup().setLngLat(coordinates).setHTML(popup_content).addTo(map);
+		// This feels hacky, but it works. The problem is that the popup content
+		// is not part of the DOM until the popup is opened, so we can't attach
+		// event listeners to the buttons until the popup is opened. So we wait
+		// for the next tick of the event loop, then attach the event listeners.
+		setTimeout(() => {
+			const connectButton = document.querySelector(
+				'.MetamaskContainer .connectButton'
+			) as HTMLButtonElement;
+			if (connectButton) {
+				connectButton.addEventListener('click', connectWallet);
+			}
+		});
 	}
 
 	function handleMouseEnter() {
@@ -69,7 +122,6 @@
 		if (!import.meta.env.VITE_MAPBOX_TOKEN) {
 			throw new Error('MAPBOX_TOKEN is required');
 		}
-
 		mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 		map = new mapboxgl.Map({
@@ -81,7 +133,7 @@
 
 		map.on('load', () => {
 			setupLayer();
-			map.on('click', 'LANDSAT_SCENE_OUTLINES-layer', handleClick);
+			map.on('click', 'LANDSAT_SCENE_OUTLINES-layer', handleClick as any);
 			map.on('mouseenter', 'LANDSAT_SCENE_OUTLINES-layer', handleMouseEnter);
 			map.on('mouseleave', 'LANDSAT_SCENE_OUTLINES-layer', handleMouseLeave);
 		});
