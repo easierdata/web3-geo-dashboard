@@ -1,14 +1,60 @@
+/* table of contents
+- layout
+- popup
+- footer
+*/
+
+/* =============
+layout
+============= */
 main {
 	margin: 0 auto;
 	max-width: 960px;
 	padding: 2em;
 }
 
-footer {
+/* =============
+popup
+============= */
+
+button {
+	background-color: #96a2e0; /* fill color */
+	color: #ffffff; /* text color */
+	border: none; /* removes default border */
+	border-radius: 15px; /* rounded corners to create a pill shape */
+	padding: 5px 10px; /* reduced padding inside the button */
 	text-align: center;
-	margin: 20px auto;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 12px; /* reduced font size */
+	margin: 2px 1px; /* optional margin around buttons */
+	cursor: pointer; /* changes the cursor to a pointer when hovering over the button */
+	transition: 0.3s; /* optional smooth transition effect */
 }
+
+button:hover {
+	background-color: #7a8bb4; /* optional: slightly darker background on hover */
+}
+
+.cid-text {
+	display: inline-block; /* allows the use of width and text-overflow */
+	width: 200px;
+	white-space: nowrap; /* keeps the text on a single line */
+	overflow: hidden; /* ensures that the text doesn't spill over */
+	text-overflow: ellipsis; /* adds the ellipsis when the text overflows */
+	vertical-align: middle; /* centers the text vertically on the line */
+	line-height: normal; /* adjusts the line height to match surrounding text */
+}
+
+/* =============
+footer
+============= */
 
 footer a {
 	padding: 0 10px;
+}
+
+footer {
+	text-align: center;
+	margin: 20px auto;
 }
