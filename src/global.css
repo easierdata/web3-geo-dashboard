@@ -1,16 +1,78 @@
 /* table of contents
+- global
 - layout
 - popup
 - footer
 */
 
 /* =============
+Global
+============= */
+html,
+body {
+	margin: 0rem;
+	width: 100%;
+	font-size: 16px;
+	font-family: 'Open Sans', sans-serif;
+	background: linear-gradient(to bottom, #8b8686, #ffffff);
+}
+
+/* =============
 layout
 ============= */
 main {
 	margin: 0 auto;
-	max-width: 960px;
-	padding: 2em;
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	background-color: #d9d9d9;
+	width: 100%;
+}
+
+header img {
+	margin-left: 0rem;
+	width: 12%;
+}
+header .header-txt {
+	display: flex;
+	align-items: center;
+	padding-right: 5rem;
+}
+
+header .header-txt a {
+	margin-left: 5rem;
+	text-decoration: none;
+	color: #000000;
+}
+
+@media only screen and (min-width: 651px) and (max-width: 1024px) {
+	html,
+	body {
+		width: 100%;
+	}
+	header {
+		width: 100%;
+	}
+	footer {
+		width: 100%;
+	}
+}
+@media only screen and (max-width: 650px) {
+	header .header-txt {
+		display: none;
+	}
+	header {
+		width: 100%;
+	}
+	footer {
+		width: 100%;
+	}
+	html,
+	body {
+		width: 116%;
+	}
 }
 
 /* =============
@@ -50,11 +112,46 @@ button:hover {
 footer
 ============= */
 
-footer a {
-	padding: 0 10px;
+footer {
+	width: 100%;
+	display: flex;
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	padding: 1rem;
 }
 
-footer {
+footer a {
+	padding: 0 3rem;
+	text-decoration: none;
+	color: black;
+}
+
+footer img {
+	width: 3.6rem;
+	margin-right: 2rem;
+}
+
+.footer-logo {
+	flex: 1;
 	text-align: center;
-	margin: 20px auto;
+	margin-left: 10rem;
+	align-self: center;
+}
+
+.footer-icon {
+	display: flex;
+	align-items: center;
+}
+
+@media only screen and (max-width: 750px) {
+	.footer-logo {
+		margin: 0;
+	}
+}
+
+@media only screen and (max-width: 450px) {
+	.footer-icon {
+		display: none;
+	}
 }
