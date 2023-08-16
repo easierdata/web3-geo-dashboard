@@ -33,7 +33,7 @@ header {
 
 header img {
 	margin-left: 0rem;
-	width: 12%;
+	width: 10%;
 }
 header .header-txt {
 	display: flex;
@@ -147,6 +147,9 @@ footer img {
 @media only screen and (max-width: 750px) {
 	.footer-logo {
 		margin: 0;
+	}
+	.footer-icon {
+		display: none;
 	}
 }
 
