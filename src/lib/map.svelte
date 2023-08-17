@@ -71,14 +71,14 @@
 	}
 
 	async function handleClick(
-		e: mapboxgl.MapMouseEvent & { features?: Web3EnrichedMapboxFeature[] }
+		e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }
 	) {
 		const coordinates = e.lngLat;
 		if (!e.features || !e.features.length) {
 			console.warn('No features found. Click event ignored.');
 			return;
 		}
-		const feature = e.features[0];
+		const feature = e.features[0] as Web3EnrichedMapboxFeature;
 		if (!feature || !feature.properties) {
 			console.warn('Feature or feature properties are not defined. Click event ignored.');
 			return;
