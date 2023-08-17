@@ -94,4 +94,11 @@
 	});
 </script>
 
-<div id="map" style="width: 800px; height: 600px;" />
+<div id="map" />
+
+<style>
+	#map {
+		width: 800px;
+		height: 600px;
+	}
+</style>
