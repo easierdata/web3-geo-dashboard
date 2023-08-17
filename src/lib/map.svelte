@@ -5,7 +5,7 @@
 
 	let map: Map;
 
-	async function getPopupMetadata(cid: string): Promise<metadata> {
+	async function getPopupMetadata(cid: string): Promise<metadata | undefined> {
 		const requestOptions: RequestInit = {
 			method: 'GET',
 			redirect: 'follow' as RequestRedirect
@@ -20,43 +20,48 @@
 			return data;
 		} catch (error) {
 			console.error(`Failed to fetch metadata for CID ${cid}:`, error);
-			throw error;
+			return undefined;
 		}
 	}
 
 	async function createPopupContent(feature: Web3EnrichedMapboxFeature): Promise<string> {
 		const properties = feature.properties;
-		const metadata = await getPopupMetadata(properties.CID);
-		const test = 22;
-		console.log(test);
+		const metadata = await getPopupMetadata(properties.cid);
+		if (!metadata) {
+			console.warn(`No metadata found for CID ${properties.cid}.`);
+		}
 
 		return `
 		<b>Popup Title</b><br>
-		<span class="cid-text">CID: QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB</span><br>
+		<span class="cid-text">CID: ${properties.cid}</span><br>
 		Row: ${properties.ROW}<br>
-		Path ${properties.PATH}<br>
-		Date acquired: July 26th, 2023<br>
-		Pinned on ${metadata.ipfs} IPFS nodes<br>
-		Stored in ${metadata.filecoin} Filecoin deals<br>
-		Available on S3: Yes ✅<br>
-		${metadata.unsealed} unsealed copies available<br>
+		Path: ${properties.PATH}<br>
+		Date acquired: ${new Date(properties.datetime).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		})}<br>
+
+		Pinned on ${metadata?.ipfs ?? 'N/A'} IPFS nodes<br> <!-- Example of including metadata -->
+		Stored in ${metadata?.filecoin ?? 'N/A'} Filecoin deals<br> <!-- Example of including metadata -->
+		${metadata?.unsealed ?? 'N/A'} unsealed copies available<br> <!-- Example of including metadata -->
 		<button id="button1">Pin to local</button>
 		<button id="button2">Download Scene</button>
 		<button id="button3">Fetch from cold storage</button>
-		`;
+	`;
 	}
 
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
 			type: 'vector',
-			url: 'mapbox://jsolly.cq2vdng6'
+			url: 'mapbox://jsolly.7315yajg'
 		});
 
 		map.addLayer({
 			id: 'LANDSAT_SCENE_OUTLINES-layer',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'landsat_scenes_intersecting_c-22roct',
+			'source-layer': 'cid_enriched-86nh01',
 			paint: {
 				'fill-color': 'grey',
 				'fill-opacity': 0.2,
@@ -65,7 +70,9 @@
 		});
 	}
 
-	function handleClick(e: mapboxgl.MapMouseEvent & { features?: Web3EnrichedMapboxFeature[] }) {
+	async function handleClick(
+		e: mapboxgl.MapMouseEvent & { features?: Web3EnrichedMapboxFeature[] }
+	) {
 		const coordinates = e.lngLat;
 		if (!e.features || !e.features.length) {
 			console.warn('No features found. Click event ignored.');
@@ -76,7 +83,7 @@
 			console.warn('Feature or feature properties are not defined. Click event ignored.');
 			return;
 		}
-		const popup_content = createPopupContent(feature);
+		const popup_content = await createPopupContent(feature);
 		new mapboxgl.Popup().setLngLat(coordinates).setHTML(popup_content).addTo(map);
 	}
 
