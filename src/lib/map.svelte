@@ -98,7 +98,8 @@
 
 <style>
 	#map {
-		width: 800px;
-		height: 600px;
+		margin: 0.15rem;
+		width: 100%;
+		height: 83%;
 	}
 </style>
