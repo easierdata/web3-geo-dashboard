@@ -64,7 +64,7 @@
 	function handleMouseLeave() {
 		map.getCanvas().style.cursor = '';
 	}
-	let searchTerm: string = '';
+	let searchTerm = '';
 
 	function clearSearch(): void {
 		searchTerm = '';
