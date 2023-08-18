@@ -1,7 +1,7 @@
 <script lang="ts">
 	import mapboxgl, { Map } from 'mapbox-gl';
 	import { onMount, onDestroy } from 'svelte';
-	import type { Web3EnrichedMapboxFeature, metadata } from '../types';
+	import type { Web3EnrichedMapboxFeature, metadata, RequestRedirect, RequestInit } from '../types';
 
 	let map: Map;
 
