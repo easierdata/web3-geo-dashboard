@@ -122,7 +122,7 @@
 	}
 	.search-bar {
 		position: absolute;
-		top: 8rem;
+		top: 4rem;
 		left: 2.4rem;
 		z-index: 1;
 		border-radius: 0.5rem;
@@ -132,7 +132,7 @@
 	}
 	.clear-button {
 		position: absolute;
-		top: 8.1rem;
+		top: 4.1rem;
 		left: 15rem;
 		z-index: 1;
 		cursor: pointer;
