@@ -2,7 +2,10 @@ import * as fs from 'fs';
 import axios from 'axios';
 
 async function main(): Promise<void> {
-	const raw: any = fs.readFileSync('./landsat_scenes_intersecting_continential_us.geojson');
+	const raw: string = fs.readFileSync(
+		'./landsat_scenes_intersecting_continential_us.geojson',
+		'utf-8'
+	);
 	const geojson = JSON.parse(raw);
 	const newGeo = geojson;
 
@@ -20,7 +23,7 @@ async function main(): Promise<void> {
 	fs.writeFileSync('cid_enriched.geojson', JSON.stringify(newGeo, null, '\t'), 'utf-8');
 }
 
-async function getCID(path: number, row: number): Promise<any> {
+async function getCID(path: number, row: number): Promise<string | null> {
 	const response = await axios.get(
 		`http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/search?collections=landsat-c2l1&query={"landsat:wrs_row":{"eq":"0${row}"}}&query={"landsat:wrs_path":{"eq":"0${path}"}}`,
 		{
