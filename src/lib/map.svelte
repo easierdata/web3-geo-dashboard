@@ -64,6 +64,16 @@
 	function handleMouseLeave() {
 		map.getCanvas().style.cursor = '';
 	}
+	let searchTerm: string = '';
+
+	function clearSearch(): void {
+		searchTerm = '';
+	}
+	function handleKeyDown(event: KeyboardEvent): void {
+		if (event.key === 'Enter' || event.key === ' ') {
+			clearSearch();
+		}
+	}
 
 	onMount(async () => {
 		if (!import.meta.env.VITE_MAPBOX_TOKEN) {
@@ -94,6 +104,14 @@
 	});
 </script>
 
+<input type="text" bind:value={searchTerm} class="search-bar" placeholder="Search" />
+<span
+	class="clear-button"
+	role="button"
+	tabindex="0"
+	on:click={clearSearch}
+	on:keydown={handleKeyDown}>x</span
+>
 <div id="map" />
 
 <style>
@@ -101,5 +119,22 @@
 		margin: 0.15rem;
 		width: 100%;
 		height: 83%;
+	}
+	.search-bar {
+		position: absolute;
+		top: 8rem;
+		left: 2.4rem;
+		z-index: 1;
+		border-radius: 0.5rem;
+		height: 1.7rem;
+		width: 14rem;
+		padding-left: 0.7rem;
+	}
+	.clear-button {
+		position: absolute;
+		top: 8.1rem;
+		left: 15rem;
+		z-index: 1;
+		cursor: pointer;
 	}
 </style>
