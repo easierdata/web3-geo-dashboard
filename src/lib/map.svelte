@@ -68,6 +68,10 @@
 
 	function clearSearch(): void {
 		searchTerm = '';
+		const inputElement = document.getElementById('searchInput');
+		if (inputElement) {
+			inputElement.focus();
+		}
 	}
 	function handleKeyDown(event: KeyboardEvent): void {
 		if (event.key === 'Enter' || event.key === ' ') {
@@ -104,14 +108,24 @@
 	});
 </script>
 
-<input type="text" bind:value={searchTerm} class="search-bar" placeholder="Search" />
-<span
-	class="clear-button"
-	role="button"
-	tabindex="0"
-	on:click={clearSearch}
-	on:keydown={handleKeyDown}>x</span
->
+<div class="search-container">
+	<i class="fa fa-search search-icon" />
+	<input
+		id="searchInput"
+		type="text"
+		bind:value={searchTerm}
+		class="search-bar"
+		placeholder="Search"
+	/>
+	<span
+		class="clear-button"
+		role="button"
+		tabindex="0"
+		on:click={clearSearch}
+		on:keydown={handleKeyDown}>x</span
+	>
+</div>
+
 <div id="map" />
 
 <style>
@@ -120,21 +134,30 @@
 		width: 100%;
 		height: 83%;
 	}
-	.search-bar {
+	.search-container {
+		display: flex;
+		align-items: center;
 		position: absolute;
-		top: 4rem;
-		left: 2.4rem;
+		width: 100%;
+		top: 8rem;
+		left: 3rem;
 		z-index: 1;
+	}
+	.search-bar {
 		border-radius: 0.5rem;
 		height: 1.7rem;
-		width: 14rem;
-		padding-left: 0.7rem;
+		width: 26%;
+		max-width: 16rem;
+		padding-left: 1.9rem;
 	}
+	.search-icon {
+		position: relative;
+		left: 1.5rem;
+	}
+
 	.clear-button {
-		position: absolute;
-		top: 4.1rem;
-		left: 15rem;
-		z-index: 1;
+		margin-left: -1.2rem;
+		margin-top: -0.2rem;
 		cursor: pointer;
 	}
 </style>
