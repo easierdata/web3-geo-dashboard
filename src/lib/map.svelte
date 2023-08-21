@@ -104,6 +104,20 @@
 	function handleMouseLeave() {
 		map.getCanvas().style.cursor = '';
 	}
+	let searchTerm = '';
+
+	function clearSearch(): void {
+		searchTerm = '';
+		const inputElement = document.getElementById('searchInput');
+		if (inputElement) {
+			inputElement.focus();
+		}
+	}
+	function handleKeyDown(event: KeyboardEvent): void {
+		if (event.key === 'Enter' || event.key === ' ') {
+			clearSearch();
+		}
+	}
 
 	onMount(async () => {
 		if (!import.meta.env.VITE_MAPBOX_TOKEN) {
@@ -133,4 +147,56 @@
 	});
 </script>
 
-<div id="map" style="width: 800px; height: 600px;" />
+<div class="search-container">
+	<i class="fa fa-search search-icon" />
+	<input
+		id="searchInput"
+		type="text"
+		bind:value={searchTerm}
+		class="search-bar"
+		placeholder="Search"
+	/>
+	<span
+		class="clear-button"
+		role="button"
+		tabindex="0"
+		on:click={clearSearch}
+		on:keydown={handleKeyDown}>x</span
+	>
+</div>
+
+<div id="map" />
+
+<style>
+	#map {
+		margin: 0.15rem;
+		width: 100%;
+		height: 83%;
+	}
+	.search-container {
+		display: flex;
+		align-items: center;
+		position: absolute;
+		width: 100%;
+		top: 8rem;
+		left: 3rem;
+		z-index: 1;
+	}
+	.search-bar {
+		border-radius: 0.5rem;
+		height: 1.7rem;
+		width: 26%;
+		max-width: 16rem;
+		padding-left: 1.9rem;
+	}
+	.search-icon {
+		position: relative;
+		left: 1.5rem;
+	}
+
+	.clear-button {
+		margin-left: -1.2rem;
+		margin-top: -0.2rem;
+		cursor: pointer;
+	}
+</style>
