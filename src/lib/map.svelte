@@ -24,14 +24,15 @@
 		}
 	}
 
-	async function createPopupContent(feature: Web3EnrichedMapboxFeature): Promise<string> {
+	async function createPopupContent(feature: Web3EnrichedMapboxFeature): Promise<HTMLDivElement> {
 		const properties = feature.properties;
 		const metadata = await getPopupMetadata(properties.cid);
 		if (!metadata) {
 			console.warn(`No metadata found for CID ${properties.cid}.`);
 		}
 
-		return `
+		const content = document.createElement('div');
+		content.innerHTML = `
 		<b>Popup Title</b><br>
 		<span class="cid-text">CID: ${properties.cid}</span><br>
 		Row: ${properties.ROW}<br>
@@ -41,17 +42,23 @@
 			month: 'long',
 			day: 'numeric'
 		})}<br>
-
 		Pinned on ${metadata?.ipfs ?? 'N/A'} IPFS nodes<br> <!-- Example of including metadata -->
 		Stored in ${metadata?.filecoin ?? 'N/A'} Filecoin deals<br> <!-- Example of including metadata -->
 		${metadata?.unsealed ?? 'N/A'} unsealed copies available<br> <!-- Example of including metadata -->
 		<button id="button1">Pin to local</button>
 		<button id="button2">Download Scene</button>
 		<div class="MetamaskContainer">
-			<button class="connectButton">Fetch from cold storage</button>
 			<div class="connectedState" style="display: none;">Connected</div>
 		</div>
 		`;
+
+		const button = document.createElement('button');
+		button.textContent = 'Fetch from cold storage';
+		button.addEventListener('click', connectWallet);
+
+		content.appendChild(button);
+
+		return content;
 	}
 
 	async function connectWallet(): Promise<void> {
@@ -118,19 +125,7 @@
 			return;
 		}
 		const popup_content = await createPopupContent(feature);
-		new mapboxgl.Popup().setLngLat(coordinates).setHTML(popup_content).addTo(map);
-		// This feels hacky, but it works. The problem is that the popup content
-		// is not part of the DOM until the popup is opened, so we can't attach
-		// event listeners to the buttons until the popup is opened. So we wait
-		// for the next tick of the event loop, then attach the event listeners.
-		setTimeout(() => {
-			const connectButton = document.querySelector(
-				'.MetamaskContainer .connectButton'
-			) as HTMLButtonElement;
-			if (connectButton) {
-				connectButton.addEventListener('click', connectWallet);
-			}
-		});
+		new mapboxgl.Popup().setLngLat(coordinates).setDOMContent(popup_content).addTo(map);
 	}
 
 	function handleMouseEnter() {
