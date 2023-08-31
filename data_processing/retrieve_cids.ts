@@ -17,7 +17,7 @@ async function main(): Promise<void> {
 
 		if (cid != null) {
 			console.log(cid[0]);
-			newGeo.features[x]['cid'] = cid[0];
+			newGeo.features[x]['properties']['cid'] = cid[0];
 			newGeo.features[x]['properties']['datetime'] = cid[1];
 			newGeo.features[x]['properties']['s3'] = cid[2];
 			newGeo.features[x]['properties']['filename'] =
