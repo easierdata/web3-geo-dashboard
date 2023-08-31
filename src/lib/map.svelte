@@ -95,14 +95,14 @@
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
 			type: 'vector',
-			url: 'mapbox://jsolly.7315yajg'
+			url: 'mapbox://mnanas2004.0xcs7zn4'
 		});
 
 		map.addLayer({
 			id: 'LANDSAT_SCENE_OUTLINES-layer',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-86nh01',
+			'source-layer': 'cid_enriched-2ljyha',
 			paint: {
 				'fill-color': 'grey',
 				'fill-opacity': 0.2,
@@ -158,7 +158,7 @@
 
 		map = new mapboxgl.Map({
 			container: 'map',
-			style: 'mapbox://styles/jsolly/clkg6as3i002201r2d79a248x',
+			style: 'mapbox://styles/mnanas2004/cllzdp0ir01of01phd51o2x3k',
 			center: [-98.5795, 39.8283],
 			zoom: 3
 		});
