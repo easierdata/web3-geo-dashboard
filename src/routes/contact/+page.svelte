@@ -33,6 +33,7 @@
 	button {
 		width: 20%;
 		background-color: black;
+		color: #ffff;
 		border-radius: 0;
 		height: 2.4rem;
 	}

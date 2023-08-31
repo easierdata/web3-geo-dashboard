@@ -21,7 +21,9 @@ body {
 layout
 ============= */
 main {
-	margin: 0 auto;
+	width: 100%;
+	height: 100%;
+	display: flex;
 }
 
 header {
@@ -81,7 +83,7 @@ popup
 
 button {
 	background-color: #96a2e0; /* fill color */
-	color: #ffffff; /* text color */
+	color: black; /* text color */
 	border: none; /* removes default border */
 	border-radius: 15px; /* rounded corners to create a pill shape */
 	padding: 5px 10px; /* reduced padding inside the button */

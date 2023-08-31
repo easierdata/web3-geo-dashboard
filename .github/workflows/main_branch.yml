@@ -8,6 +8,28 @@ on:
     - cron: '0 3 * * 0-6' # Every day at 3am UTC
 
 jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint with eslint
+        run: npm run lint
+
+      - name: Run coverage
+        run: npm run coverage
+
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
@@ -31,22 +53,3 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
-
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint with eslint
-        run: npm run lint
-
-      - name: Run coverage
-        run: npm run coverage
-
-      # Not using until we create a headless coveralls account
-      # - name: Coveralls
-      #   uses: coverallsapp/github-action@v2
