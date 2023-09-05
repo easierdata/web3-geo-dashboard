@@ -12,7 +12,10 @@
 		};
 
 		try {
-			const response = await fetch(`http://localhost:7777/api/metadata/${cid}`, requestOptions);
+			const response = await fetch(
+				`https://easier-dashboard-api.vercel.app/api/metadata/${cid}`,
+				requestOptions
+			);
 			if (!response.ok) {
 				throw new Error(`Error fetching metadata for CID ${cid}: ${response.statusText}`);
 			}
