@@ -16,9 +16,12 @@ async function main(): Promise<void> {
 		const cid = await getCID(feature.properties.PATH, feature.properties.ROW);
 
 		if (cid != null) {
-			newGeo.features[x]['cid'] = cid[0];
+			console.log(cid[0]);
+			newGeo.features[x]['properties']['cid'] = cid[0];
 			newGeo.features[x]['properties']['datetime'] = cid[1];
 			newGeo.features[x]['properties']['s3'] = cid[2];
+			newGeo.features[x]['properties']['filename'] =
+				cid[2].split('/')[cid[2].split('/').length - 1];
 		}
 	}
 
