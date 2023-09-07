@@ -12,7 +12,10 @@
 		};
 
 		try {
-			const response = await fetch(`http://localhost:7777/api/metadata/${cid}`, requestOptions);
+			const response = await fetch(
+				`https://easier-dashboard-api.vercel.app/api/metadata/${cid}`,
+				requestOptions
+			);
 			if (!response.ok) {
 				throw new Error(`Error fetching metadata for CID ${cid}: ${response.statusText}`);
 			}
@@ -26,6 +29,7 @@
 
 	async function createPopupContent(feature: Web3EnrichedMapboxFeature): Promise<HTMLDivElement> {
 		const properties = feature.properties;
+		console.log(properties);
 		const metadata = await getPopupMetadata(properties.cid);
 		if (!metadata) {
 			console.warn(`No metadata found for CID ${properties.cid}.`);
@@ -95,14 +99,14 @@
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
 			type: 'vector',
-			url: 'mapbox://mnanas2004.0xcs7zn4'
+			url: 'mapbox://mnanas2004.brcihxt7'
 		});
 
 		map.addLayer({
 			id: 'LANDSAT_SCENE_OUTLINES-layer',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-2ljyha',
+			'source-layer': 'cid_enriched-dxp1cw',
 			paint: {
 				'fill-color': 'grey',
 				'fill-opacity': 0.2,
