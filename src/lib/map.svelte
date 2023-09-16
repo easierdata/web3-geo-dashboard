@@ -49,20 +49,43 @@
 		Pinned on ${metadata?.ipfs ?? 'N/A'} IPFS nodes<br> <!-- Example of including metadata -->
 		Stored in ${metadata?.filecoin ?? 'N/A'} Filecoin deals<br> <!-- Example of including metadata -->
 		${metadata?.unsealed ?? 'N/A'} unsealed copies available<br> <!-- Example of including metadata -->
-		<button id="button1">Pin to local</button>
-		<button id="button2">Download Scene</button>
 		<div class="MetamaskContainer">
 			<div class="connectedState" style="display: none;">Connected</div>
 		</div>
 		`;
 
-		const button = document.createElement('button');
-		button.textContent = 'Fetch from cold storage';
-		button.addEventListener('click', connectWallet);
+		const pinButton = document.createElement('button');
+		pinButton.textContent = 'Pin to local';
+		pinButton.addEventListener('click', () => pinToLocal(properties.cid));
 
-		content.appendChild(button);
+		const downloadButton = document.createElement('button');
+		downloadButton.textContent = 'Download Scene';
+		downloadButton.addEventListener('click', () => alert('Download Scene Clicked'));
+
+		const fetchButton = document.createElement('button');
+		fetchButton.textContent = 'Fetch from cold storage';
+		fetchButton.addEventListener('click', connectWallet);
+
+		content.appendChild(pinButton);
+		content.appendChild(downloadButton);
+		content.appendChild(fetchButton);
 
 		return content;
+	}
+
+	async function pinToLocal(cid: string): Promise<void> {
+		alert('Pin to local clicked');
+		const extensionId = 'jhkocbnkjcddmhckpgmblnpeddcjgeng';
+
+		//@ts-ignore
+		if (chrome?.runtime?.sendMessage) {
+			//@ts-ignore
+			chrome.runtime.sendMessage(extensionId, cid, async function (response) {
+				await alert('Sent pin command!');
+			});
+		} else {
+			alert('Failed to pin (is extension installed?)');
+		}
 	}
 
 	async function connectWallet(): Promise<void> {
@@ -155,9 +178,11 @@
 	}
 
 	onMount(async () => {
+		// @ts-ignore
 		if (!import.meta.env.VITE_MAPBOX_TOKEN) {
 			throw new Error('MAPBOX_TOKEN is required');
 		}
+		// @ts-ignore
 		mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 		map = new mapboxgl.Map({
