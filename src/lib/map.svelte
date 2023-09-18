@@ -55,8 +55,8 @@
 		`;
 
 		const pinButton = document.createElement('button');
+		pinButton.setAttribute('id', 'pinButton');
 		pinButton.textContent = 'Pin to local';
-		pinButton.addEventListener('click', () => pinToLocal(properties.cid));
 
 		const downloadButton = document.createElement('button');
 		downloadButton.textContent = 'Download Scene';
@@ -71,21 +71,6 @@
 		content.appendChild(fetchButton);
 
 		return content;
-	}
-
-	async function pinToLocal(cid: string): Promise<void> {
-		alert('Pin to local clicked');
-		const extensionId = 'jhkocbnkjcddmhckpgmblnpeddcjgeng';
-
-		//@ts-ignore
-		if (chrome?.runtime?.sendMessage) {
-			//@ts-ignore
-			chrome.runtime.sendMessage(extensionId, cid, async function (response) {
-				await alert('Sent pin command!');
-			});
-		} else {
-			alert('Failed to pin (is extension installed?)');
-		}
 	}
 
 	async function connectWallet(): Promise<void> {
