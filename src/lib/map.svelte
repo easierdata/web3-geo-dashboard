@@ -3,6 +3,10 @@
 	import { ethers } from 'ethers';
 	import { onMount, onDestroy } from 'svelte';
 	import type { Web3EnrichedMapboxFeature, metadata, RequestRedirect, RequestInit } from '../types';
+	import Modal from './modal.svelte';
+
+	let showModal = false;
+	let cid = '';
 
 	let map: Map;
 	async function getPopupMetadata(cid: string): Promise<metadata | undefined> {
@@ -60,15 +64,23 @@
 
 		const downloadButton = document.createElement('button');
 		downloadButton.textContent = 'Download Scene';
-		downloadButton.addEventListener('click', () => alert('Download Scene Clicked'));
+		downloadButton.addEventListener('click', () => alert(properties.cid)); // Send req to download ep of kubo (might have to use extension)
 
 		const fetchButton = document.createElement('button');
 		fetchButton.textContent = 'Fetch from cold storage';
 		fetchButton.addEventListener('click', connectWallet);
 
+		const codeButton = document.createElement('button');
+		codeButton.textContent = 'Code';
+		codeButton.addEventListener('click', () => {
+			showModal = true;
+			cid = properties.cid;
+		});
+
 		content.appendChild(pinButton);
 		content.appendChild(downloadButton);
 		content.appendChild(fetchButton);
+		content.appendChild(codeButton);
 
 		return content;
 	}
@@ -212,6 +224,32 @@
 
 <div id="map" />
 
+<Modal bind:showModal bind:cid>
+	<h2 slot="header">Python Integration</h2>
+
+	<div>
+		<h3>Import ipfs-stac client</h3>
+		<div class="snippet">
+			<p>from ipfs_stac import client</p>
+		</div>
+		<br />
+		<h3>Connect to STAC server and fetch CID</h3>
+		<div class="snippet">
+			<p>
+				my_client =
+				client.Web3(stac_endpoint="http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/",
+				local_gateway="127.0.0.1")
+				<br />
+				data = my_client.getFromCID("{cid}")
+			</p>
+		</div>
+	</div>
+
+	<br />
+
+	<a href="https://pypi.org/project/ipfs-stac/" target="_blank">Get ipfs-stac</a>
+</Modal>
+
 <style>
 	#map {
 		margin: 0.15rem;
@@ -243,5 +281,14 @@
 		margin-left: -1.2rem;
 		margin-top: -0.2rem;
 		cursor: pointer;
+	}
+
+	.snippet {
+		background-color: #f5f5f5;
+		color: #1d1d1d;
+		border: solid;
+		border-color: #e0e0e0;
+		border-radius: 5px;
+		padding-left: 2px;
 	}
 </style>
