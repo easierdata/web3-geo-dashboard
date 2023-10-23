@@ -14,6 +14,7 @@
 <main>
 	<slot />
 </main>
+
 <footer>
 	<div class="footer-logo">
 		<a href="https://twitter.com/easierdataorg" target="_blank"

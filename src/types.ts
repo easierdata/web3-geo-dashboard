@@ -6,6 +6,7 @@ interface CustomFeatureProperties {
 	cid: string;
 	datetime: ISODateString;
 	s3: string;
+	filename: string;
 	// IPFS_NODES: number;
 	// FIL_DEALS: number;
 	// ON_S3: boolean;

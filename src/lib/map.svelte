@@ -4,9 +4,17 @@
 	import { onMount, onDestroy } from 'svelte';
 	import type { Web3EnrichedMapboxFeature, metadata, RequestRedirect, RequestInit } from '../types';
 	import Modal from './modal.svelte';
+	import Accordion from './accordion.svelte';
 
 	let showModal = false;
 	let cid = '';
+
+	let canvas: HTMLElement;
+	let start: any;
+	let current;
+	let box: any;
+	let selectedFeatures: any[] = [];
+	let cidArray: string[] = [];
 
 	let map: Map;
 	async function getPopupMetadata(cid: string): Promise<metadata | undefined> {
@@ -41,7 +49,7 @@
 
 		const content = document.createElement('div');
 		content.innerHTML = `
-		<b>Popup Title</b><br>
+		<b>Inspect Tile</b><br>
 		<span class="cid-text">CID: ${properties.cid}</span><br>
 		Row: ${properties.ROW}<br>
 		Path: ${properties.PATH}<br>
@@ -133,6 +141,112 @@
 				'fill-outline-color': 'black'
 			}
 		});
+
+		map.addLayer({
+			id: 'LANDSAT_SCENE_OUTLINES-highlighted',
+			type: 'fill',
+			source: 'LANDSAT_SCENE_OUTLINES',
+			'source-layer': 'cid_enriched-dxp1cw',
+			paint: {
+				'fill-outline-color': 'black',
+				'fill-color': '#484896',
+				'fill-opacity': 0.75
+			},
+			filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
+		});
+	}
+
+	function mouseDown(e: any) {
+		// Break if shift is released
+		if (!(e.shiftKey && e.button === 0)) return;
+		map.dragPan.disable();
+
+		document.addEventListener('mousemove', onMouseMove);
+		document.addEventListener('mouseup', onMouseUp);
+		document.addEventListener('keydown', onKeyDown);
+
+		start = mousePos(e);
+	}
+
+	function onKeyDown(e: any) {
+		if (e.keyCode === 27) finish(e);
+	}
+
+	function mousePos(e: any) {
+		const rect = canvas.getBoundingClientRect();
+		return new mapboxgl.Point(
+			e.clientX - rect.left - canvas.clientLeft,
+			e.clientY - rect.top - canvas.clientTop
+		);
+	}
+
+	function onMouseMove(e: any) {
+		current = mousePos(e);
+
+		if (!box) {
+			box = document.createElement('div');
+			box.classList.add('boxdraw');
+			canvas.appendChild(box);
+		}
+
+		const minX = Math.min(start.x, current.x),
+			maxX = Math.max(start.x, current.x),
+			minY = Math.min(start.y, current.y),
+			maxY = Math.max(start.y, current.y);
+
+		const pos = `translate(${minX}px, ${minY}px)`;
+		box.style.transform = pos;
+		box.style.width = maxX - minX + 'px';
+		box.style.height = maxY - minY + 'px';
+	}
+
+	function onMouseUp(e: any) {
+		finish([start, mousePos(e)]);
+	}
+
+	function finish(bbox: any) {
+		console.log(bbox);
+		document.removeEventListener('mousemove', onMouseMove);
+		document.removeEventListener('keydown', onKeyDown);
+		document.removeEventListener('mouseup', onMouseUp);
+
+		if (box) {
+			box.parentNode.removeChild(box);
+			box = null;
+		}
+
+		if (bbox) {
+			const features = map.queryRenderedFeatures(bbox, {
+				layers: ['LANDSAT_SCENE_OUTLINES-layer']
+			});
+
+			features.forEach((feature) => {
+				// @ts-ignore
+				const path = feature.properties.PATH; //@ts-ignore
+				const row = feature.properties.ROW;
+				// @ts-ignore
+				feature.properties.PATHROW = `${path}${row}`;
+			});
+
+			console.log(features);
+			selectedFeatures = features;
+			features.forEach((feature) => {
+				if (feature.properties) cidArray.push(feature.properties.cid);
+			});
+
+			// @ts-ignore
+			const mergedPathRows = features.map(
+				(feature) => `${feature.properties.PATH}${feature.properties.ROW}`
+			);
+
+			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+				'in',
+				['concat', ['get', 'PATH'], ['get', 'ROW']],
+				['literal', mergedPathRows]
+			]);
+		}
+
+		map.dragPan.enable();
 	}
 
 	async function handleClick(
@@ -148,8 +262,26 @@
 			console.warn('Feature or feature properties are not defined. Click event ignored.');
 			return;
 		}
+
+		map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+			'all',
+			['==', 'PATH', feature.properties.PATH],
+			['==', 'ROW', feature.properties.ROW]
+		]);
+
 		const popup_content = await createPopupContent(feature);
-		new mapboxgl.Popup().setLngLat(coordinates).setDOMContent(popup_content).addTo(map);
+		const popup = new mapboxgl.Popup()
+			.setLngLat(coordinates)
+			.setDOMContent(popup_content)
+			.addTo(map);
+
+		popup.on('close', function () {
+			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+				'all',
+				['==', 'PATH', ''],
+				['==', 'ROW', '']
+			]);
+		});
 	}
 
 	function handleMouseEnter() {
@@ -190,10 +322,28 @@
 		});
 
 		map.on('load', () => {
+			canvas = map.getCanvasContainer();
+
 			setupLayer();
-			map.on('click', 'LANDSAT_SCENE_OUTLINES-layer', handleClick as any);
+			map.on('click', 'LANDSAT_SCENE_OUTLINES-layer', (e) => handleClick(e) as any);
 			map.on('mouseenter', 'LANDSAT_SCENE_OUTLINES-layer', handleMouseEnter);
 			map.on('mouseleave', 'LANDSAT_SCENE_OUTLINES-layer', handleMouseLeave);
+
+			// Multi select controls
+			canvas.addEventListener('mousedown', mouseDown, true);
+			map.getCanvas().addEventListener('keydown', (e) => {
+				e.preventDefault();
+				if (e.key == 'Escape') {
+					map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+						'all',
+						['==', 'PATH', ''],
+						['==', 'ROW', '']
+					]);
+
+					selectedFeatures = [];
+					cidArray = [];
+				}
+			});
 		});
 	});
 
@@ -250,17 +400,79 @@
 	<a href="https://pypi.org/project/ipfs-stac/" target="_blank">Get ipfs-stac</a>
 </Modal>
 
+{#if selectedFeatures.length > 0}
+	<div id="side-container">
+		<Accordion open={false}>
+			<span slot="head">Number of selected features: {selectedFeatures.length}</span>
+			<div slot="details">
+				{#each selectedFeatures as feature}
+					<p id="cid-list">{feature.properties.cid}</p>
+				{/each}
+			</div>
+		</Accordion>
+		<h4>Code</h4>
+		<h5>
+			Import <a href="https://pypi.org/project/ipfs-stac/" target="_blank">ipfs-stac</a> client
+		</h5>
+		<div class="side-snippet">
+			<p>from ipfs_stac import client</p>
+		</div>
+		<h5>Connect to STAC server and fetch CIDs</h5>
+		<div class="side-snippet">
+			<p>
+				my_client =
+				client.Web3(stac_endpoint="http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/",
+				local_gateway="127.0.0.1")
+				<br />
+				<br />
+				assets = [] <br />
+				cidArray = {JSON.stringify(cidArray)}
+				<br />
+				<br />
+				for x in cidArray: <br />
+				&emsp; data = my_client.getFromCID(x) <br />
+				&emsp; assets.append(data)
+			</p>
+		</div>
+	</div>
+{/if}
+
 <style>
 	#map {
 		margin: 0.15rem;
 		width: 100%;
 		height: 83%;
 	}
+	#side-container {
+		background-color: #f5f5f5;
+		text-align: center;
+		width: 50%;
+		word-wrap: break-word;
+		overflow: auto;
+		z-index: 2;
+	}
+
+	#cid-list {
+		font-size: 10px;
+	}
+
+	.side-snippet {
+		background-color: #d2d2d2;
+		color: #1d1d1d;
+		border: solid;
+		border-color: #e0e0e0;
+		border-radius: 5px;
+		margin-left: 5px;
+		margin-right: 5px;
+		font-size: 10px;
+		text-align: left !important;
+		padding-left: 5px;
+	}
 	.search-container {
 		display: flex;
 		align-items: center;
 		position: absolute;
-		width: 100%;
+		width: 80%;
 		top: 8rem;
 		left: 3rem;
 		z-index: 1;
@@ -282,7 +494,6 @@
 		margin-top: -0.2rem;
 		cursor: pointer;
 	}
-
 	.snippet {
 		background-color: #f5f5f5;
 		color: #1d1d1d;
