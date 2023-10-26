@@ -1,6 +1,7 @@
 type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`;
 
 interface CustomFeatureProperties {
+	ipfs_cid: string;
 	ROW: string;
 	PATH: string;
 	cid: string;

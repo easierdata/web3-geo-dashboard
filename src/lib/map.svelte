@@ -50,7 +50,8 @@
 		const content = document.createElement('div');
 		content.innerHTML = `
 		<b>Inspect Tile</b><br>
-		<span class="cid-text">CID: ${properties.cid}</span><br>
+		<span class="cid-text">Filecoin CID: ${properties.cid}</span><br>
+		<span class="cid-text">IPFS CID: ${properties.ipfs_cid}</span><br>
 		Row: ${properties.ROW}<br>
 		Path: ${properties.PATH}<br>
 		Date acquired: ${new Date(properties.datetime).toLocaleDateString('en-US', {
@@ -127,14 +128,14 @@
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
 			type: 'vector',
-			url: 'mapbox://mnanas2004.brcihxt7'
+			url: 'mapbox://mnanas2004.97gi5ppc'
 		});
 
 		map.addLayer({
 			id: 'LANDSAT_SCENE_OUTLINES-layer',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-dxp1cw',
+			'source-layer': 'cid_enriched-a7c996',
 			paint: {
 				'fill-color': 'grey',
 				'fill-opacity': 0.2,
@@ -146,7 +147,7 @@
 			id: 'LANDSAT_SCENE_OUTLINES-highlighted',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-dxp1cw',
+			'source-layer': 'cid_enriched-a7c996',
 			paint: {
 				'fill-outline-color': 'black',
 				'fill-color': '#484896',
