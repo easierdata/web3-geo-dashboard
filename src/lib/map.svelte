@@ -414,18 +414,18 @@
 								-8
 							)}`}
 							target="_blank"
-							role="button"
 						>
 							{feature.properties.filename}
 						</a>
 					</p>
 					<div>
+						<!-- svelte-ignore a11y-img-redundant-alt -->
 						<img
 							src={`https://landsatlook.usgs.gov/gen-browse?size=rrb&type=refl&product_id=${feature.properties.filename.slice(
 								0,
 								-8
 							)}`}
-							alt="Landsat Image"
+							alt="Reflective Landsat Image"
 							style="max-width: 50%"
 						/>
 					</div>
