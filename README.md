@@ -4,6 +4,18 @@
 ![UnitTesting](https://img.shields.io/badge/unit%20testing-vitest-ffce27.svg)
 [![License](https://img.shields.io/:license-mit-blue.svg?style=flat-square)](https://badges.mit-license.org)
 
+## Prerequisites
+
+An access token is needed to access the Mapbox web service resources with scope permissions enabled for `styles:tiles` and `styles:read`.
+
+1. Create a `.env` file in the project root with the following variables:
+
+```shell
+VITE_MAPBOX_TOKEN=<access token>
+```
+
+> NOTE: Details on creating tokens can be found [here](https://docs.mapbox.com/api/accounts/tokens/).
+
 ## Developing
 
 Once you've cloned the project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
@@ -36,8 +48,9 @@ You can preview the production build with `npm run preview`.
   - 🍴 Fork this repo!
 
 - **Option 2**
+
   - 👯 Clone to your local machine using:
-    `https://github.com/jsolly/blogthedata.git`
+    `git clone https://github.com/easierdata/web3-geo-dashboard`
 
 ### Step 2
 
@@ -46,8 +59,8 @@ You can preview the production build with `npm run preview`.
 ### Step 3
 
 - 🔃 Create a new pull request using:
-  <a href="https://github.com/easierdata/web3-geo-dashboard/compare" rel="noopener noreferrer" target="_blank">
-  `https://github.com/easierdata/web3-geo-dashboard/compare`</a>.
+  `<a href="https://github.com/easierdata/web3-geo-dashboard/compare" rel="noopener noreferrer" target="_blank">`
+  `https://github.com/easierdata/web3-geo-dashboard/compare</a>`.
 
 ## Pre-commit Hooks
 
