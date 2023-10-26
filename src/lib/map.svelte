@@ -406,8 +406,29 @@
 		<Accordion open={false}>
 			<span slot="head">Number of selected features: {selectedFeatures.length}</span>
 			<div slot="details">
-				{#each selectedFeatures as feature}
-					<p id="cid-list">{feature.properties.cid}</p>
+				{#each selectedFeatures.sort( (a, b) => a.properties.datetime.localeCompare(b.properties.datetime) ) as feature}
+					<p id="cid-list">
+						<a
+							href={`http://easier.umd.edu/browse/collections/landsat-c2l1/items/${feature.properties.filename.slice(
+								0,
+								-8
+							)}`}
+							target="_blank"
+							role="button"
+						>
+							{feature.properties.filename}
+						</a>
+					</p>
+					<div>
+						<img
+							src={`https://landsatlook.usgs.gov/gen-browse?size=rrb&type=refl&product_id=${feature.properties.filename.slice(
+								0,
+								-8
+							)}`}
+							alt="Landsat Image"
+							style="max-width: 50%"
+						/>
+					</div>
 				{/each}
 			</div>
 		</Accordion>
