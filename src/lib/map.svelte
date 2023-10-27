@@ -128,14 +128,14 @@
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
 			type: 'vector',
-			url: 'mapbox://mnanas2004.97gi5ppc'
+			url: 'mapbox://mnanas2004.cjvy70zk'
 		});
 
 		map.addLayer({
 			id: 'LANDSAT_SCENE_OUTLINES-layer',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-a7c996',
+			'source-layer': 'cid_enriched-7nfsao',
 			paint: {
 				'fill-color': 'grey',
 				'fill-opacity': 0.2,
@@ -147,7 +147,7 @@
 			id: 'LANDSAT_SCENE_OUTLINES-highlighted',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-a7c996',
+			'source-layer': 'cid_enriched-7nfsao',
 			paint: {
 				'fill-outline-color': 'black',
 				'fill-color': '#484896',
