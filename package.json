@@ -45,7 +45,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@esbuild/darwin-arm64": "^0.19.3",
+		"esbuild": "^0.19.3",
 		"@testing-library/svelte": "^4.0.3",
 		"@vitest/ui": "^0.33.0",
 		"axios": "^1.4.0",
