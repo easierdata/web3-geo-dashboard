@@ -51,7 +51,7 @@
 		content.innerHTML = `
 		<b>Inspect Tile</b><br>
 		<span class="cid-text">Filecoin CID: ${properties.cid}</span><br>
-		<span class="cid-text">IPFS CID: ${properties.ipfs_cid}</span><br>
+		<span class="ipfs-cid-text">IPFS CID: ${properties.ipfs_cid}</span><br>
 		Row: ${properties.ROW}<br>
 		Path: ${properties.PATH}<br>
 		Date acquired: ${new Date(properties.datetime).toLocaleDateString('en-US', {
@@ -59,7 +59,9 @@
 			month: 'long',
 			day: 'numeric'
 		})}<br>
-		Pinned on ${metadata?.ipfs ?? 'N/A'} IPFS nodes<br> <!-- Example of including metadata -->
+		<span class="pins">Pinned on ${
+			metadata?.ipfs ?? 'N/A'
+		} IPFS nodes</span><br> <!-- Example of including metadata -->
 		Stored in ${metadata?.filecoin ?? 'N/A'} Filecoin deals<br> <!-- Example of including metadata -->
 		${metadata?.unsealed ?? 'N/A'} unsealed copies available<br> <!-- Example of including metadata -->
 		<div class="MetamaskContainer">
