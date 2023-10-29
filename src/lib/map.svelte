@@ -85,7 +85,7 @@
 		codeButton.textContent = 'Code';
 		codeButton.addEventListener('click', () => {
 			showModal = true;
-			cid = properties.cid;
+			cid = properties.ipfs_cid;
 		});
 
 		content.appendChild(pinButton);
@@ -234,7 +234,7 @@
 			console.log(features);
 			selectedFeatures = features;
 			features.forEach((feature) => {
-				if (feature.properties) cidArray.push(feature.properties.cid);
+				if (feature.properties) cidArray.push(feature.properties.ipfs_cid);
 			});
 
 			// @ts-ignore
