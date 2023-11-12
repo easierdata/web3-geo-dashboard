@@ -42,6 +42,18 @@
 	async function createPopupContent(feature: Web3EnrichedMapboxFeature): Promise<HTMLDivElement> {
 		const properties = feature.properties;
 		console.log(properties);
+
+		const response = await fetch(
+			`https://filecoin.tools/api/deals/list?page=1&per_page=20&selector=${properties.piece}&sort_by_column=status&sort_direction=-1`,
+			{
+				method: 'GET'
+			}
+		);
+
+		const deals = await response.json();
+
+		console.log(deals);
+
 		const metadata = await getPopupMetadata(properties.cid);
 		if (!metadata) {
 			console.warn(`No metadata found for CID ${properties.cid}.`);
@@ -130,14 +142,14 @@
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
 			type: 'vector',
-			url: 'mapbox://mnanas2004.cjvy70zk'
+			url: 'mapbox://mnanas2004.alx6bsr0'
 		});
 
 		map.addLayer({
 			id: 'LANDSAT_SCENE_OUTLINES-layer',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-7nfsao',
+			'source-layer': 'cid_enriched4-49jvb4',
 			paint: {
 				'fill-color': 'grey',
 				'fill-opacity': 0.2,
@@ -149,7 +161,7 @@
 			id: 'LANDSAT_SCENE_OUTLINES-highlighted',
 			type: 'fill',
 			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched-7nfsao',
+			'source-layer': 'cid_enriched4-49jvb4',
 			paint: {
 				'fill-outline-color': 'black',
 				'fill-color': '#484896',
@@ -239,7 +251,7 @@
 
 			// @ts-ignore
 			const mergedPathRows = features.map(
-				(feature) => `${feature.properties.PATH}${feature.properties.ROW}`
+				(feature) => `${feature.properties?.PATH}${feature.properties?.ROW}`
 			);
 
 			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
