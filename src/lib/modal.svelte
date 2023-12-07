@@ -1,6 +1,5 @@
 <script>
 	export let showModal; // boolean
-	export let cid;
 
 	let dialog; // HTMLDialogElement
 

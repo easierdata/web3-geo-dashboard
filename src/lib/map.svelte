@@ -9,6 +9,8 @@
 	let showModal = false;
 	let cid = '';
 
+	let deals: any = {};
+
 	let canvas: HTMLElement;
 	let start: any;
 	let current;
@@ -50,8 +52,7 @@
 			}
 		);
 
-		const deals = await response.json();
-
+		deals = await response.json();
 		console.log(deals);
 
 		const metadata = await getPopupMetadata(properties.cid);
@@ -74,7 +75,7 @@
 		<span class="pins">Pinned on ${
 			metadata?.ipfs ?? 'N/A'
 		} IPFS nodes</span><br> <!-- Example of including metadata -->
-		Stored in ${metadata?.filecoin ?? 'N/A'} Filecoin deals<br> <!-- Example of including metadata -->
+		Stored in ${metadata?.filecoin ?? 'N/A'} Filecoin Peers<br> <!-- Example of including metadata -->
 		${metadata?.unsealed ?? 'N/A'} unsealed copies available<br> <!-- Example of including metadata -->
 		<div class="MetamaskContainer">
 			<div class="connectedState" style="display: none;">Connected</div>
@@ -94,7 +95,7 @@
 		fetchButton.addEventListener('click', connectWallet);
 
 		const codeButton = document.createElement('button');
-		codeButton.textContent = 'Code';
+		codeButton.textContent = 'More';
 		codeButton.addEventListener('click', () => {
 			showModal = true;
 			cid = properties.ipfs_cid;
@@ -389,7 +390,7 @@
 
 <div id="map" />
 
-<Modal bind:showModal bind:cid>
+<Modal bind:showModal>
 	<h2 slot="header">Python Integration</h2>
 
 	<div>
@@ -413,6 +414,51 @@
 	<br />
 
 	<a href="https://pypi.org/project/ipfs-stac/" target="_blank">Get ipfs-stac</a>
+
+	{#if deals.Deals && deals.Deals?.length > 0}
+		<h2>Deals {deals.Deals?.length}</h2>
+		<hr />
+		{#each deals.Deals as deal}
+			<Accordion open={false}>
+				<span slot="head">Deal [{deal.DealID}]</span>
+				<div slot="details">
+					<table>
+						<tr>
+							<th>Deal Duration</th>
+							<th
+								>{new Date(deal.DealInfo.Proposal.StartEpochAsDate).toISOString().substring(0, 10)} -
+								{new Date(deal.DealInfo.Proposal.EndEpochAsDate).toISOString().substring(0, 10)}</th
+							>
+						</tr>
+						<tr>
+							<th>Storage Price Per Epoch</th>
+							<th>{deal.DealInfo.Proposal.StoragePricePerEpoch}</th>
+						</tr>
+						<tr>
+							<th>Provider Collateral</th>
+							<th>{deal.DealInfo.Proposal.ProviderCollateral}</th>
+						</tr>
+						<tr>
+							<th>Last Updated Epoch</th>
+							<th>{deal.DealInfo.State.LastUpdatedEpoch}</th>
+						</tr>
+						<tr>
+							<th>Piece CID</th>
+							<th>{deal.DealInfo.Proposal.PieceCID['/']}</th>
+						</tr>
+						<tr>
+							<th>Verified Deal?</th>
+							<th>{deal.DealInfo.Proposal.VerifiedDeal}</th>
+						</tr>
+						<tr>
+							<th>Client</th>
+							<th>{deal.DealInfo.Proposal.Client}</th>
+						</tr>
+					</table>
+				</div>
+			</Accordion>
+		{/each}
+	{/if}
 </Modal>
 
 {#if selectedFeatures.length > 0}
