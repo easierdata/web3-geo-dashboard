@@ -423,34 +423,34 @@
 				<span slot="head">Deal [{deal.DealID}]</span>
 				<div slot="details">
 					<table>
-						<tr>
+						<tr class="dealRow">
 							<th>Deal Duration</th>
 							<th
 								>{new Date(deal.DealInfo.Proposal.StartEpochAsDate).toISOString().substring(0, 10)} -
 								{new Date(deal.DealInfo.Proposal.EndEpochAsDate).toISOString().substring(0, 10)}</th
 							>
 						</tr>
-						<tr>
+						<tr class="dealRow">
 							<th>Storage Price Per Epoch</th>
 							<th>{deal.DealInfo.Proposal.StoragePricePerEpoch}</th>
 						</tr>
-						<tr>
+						<tr class="dealRow">
 							<th>Provider Collateral</th>
 							<th>{deal.DealInfo.Proposal.ProviderCollateral}</th>
 						</tr>
-						<tr>
+						<tr class="dealRow">
 							<th>Last Updated Epoch</th>
 							<th>{deal.DealInfo.State.LastUpdatedEpoch}</th>
 						</tr>
-						<tr>
+						<tr class="dealRow">
 							<th>Piece CID</th>
 							<th>{deal.DealInfo.Proposal.PieceCID['/']}</th>
 						</tr>
-						<tr>
+						<tr class="dealRow">
 							<th>Verified Deal?</th>
 							<th>{deal.DealInfo.Proposal.VerifiedDeal}</th>
 						</tr>
-						<tr>
+						<tr class="dealRow">
 							<th>Client</th>
 							<th>{deal.DealInfo.Proposal.Client}</th>
 						</tr>
@@ -583,5 +583,14 @@
 		border-color: #e0e0e0;
 		border-radius: 5px;
 		padding-left: 2px;
+	}
+
+	.dealRow {
+		border-bottom: 1px solid #ddd;
+		text-align: left;
+	}
+
+	.dealRow th {
+		padding-left: 15px;
 	}
 </style>
