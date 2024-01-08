@@ -87,8 +87,8 @@
 		pinButton.textContent = 'Pin to local';
 
 		const downloadButton = document.createElement('button');
+		downloadButton.setAttribute('id', 'downloadButton');
 		downloadButton.textContent = 'Download Scene';
-		downloadButton.addEventListener('click', () => alert(properties.cid)); // Send req to download ep of kubo (might have to use extension)
 
 		const fetchButton = document.createElement('button');
 		fetchButton.textContent = 'Fetch from cold storage';
@@ -114,9 +114,12 @@
 			await window.ethereum.request({ method: 'eth_requestAccounts' });
 			const provider = new ethers.BrowserProvider(window.ethereum);
 			const signer = await provider.getSigner();
+			console.log(signer);
 
-			// Add logic here to interact with the contract or perform other actions
-			// const provider = new ethers.BrowserProvider(window.ethereum);
+			const tx = await signer.sendTransaction({
+				to: '0x92d3267215Ec56542b985473E73C8417403B15ac',
+				value: ethers.parseUnits('0.001', 'ether')
+			});
 
 			const connectButton = document.querySelector(
 				'.MetamaskContainer .connectButton'
@@ -132,9 +135,6 @@
 			if (connectedState) {
 				connectedState.style.display = 'block';
 			}
-
-			const connectedAccount = await signer.getAddress();
-			console.log(connectedAccount);
 		} else {
 			alert('Metamask not detected!');
 		}
