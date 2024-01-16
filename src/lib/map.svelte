@@ -10,6 +10,7 @@
 	let cid = '';
 
 	let deals: any = {};
+	let providers: any = [];
 
 	let canvas: HTMLElement;
 	let start: any;
@@ -45,20 +46,24 @@
 		const properties = feature.properties;
 		console.log(properties);
 
-		const response = await fetch(
+		/*const response = await fetch(
 			`https://filecoin.tools/api/deals/list?page=1&per_page=20&selector=${properties.piece}&sort_by_column=status&sort_direction=-1`,
 			{
 				method: 'GET'
 			}
 		);
 
-		deals = await response.json();
+		deals = await response.json();*/
+		deals = [];
 		console.log(deals);
 
+		providers = [];
 		const metadata = await getPopupMetadata(properties.cid);
 		if (!metadata) {
 			console.warn(`No metadata found for CID ${properties.cid}.`);
 		}
+
+		providers = metadata?.Providers;
 
 		const content = document.createElement('div');
 		content.innerHTML = `
@@ -75,7 +80,9 @@
 		<span class="pins">Pinned on ${
 			metadata?.ipfs ?? 'N/A'
 		} IPFS nodes</span><br> <!-- Example of including metadata -->
-		Stored in ${metadata?.filecoin ?? 'N/A'} Filecoin Peers<br> <!-- Example of including metadata -->
+		Stored in ${
+			metadata?.Providers.length ?? 'N/A'
+		} Filecoin Peers<br> <!-- Example of including metadata -->
 		${metadata?.unsealed ?? 'N/A'} unsealed copies available<br> <!-- Example of including metadata -->
 		<div class="MetamaskContainer">
 			<div class="connectedState" style="display: none;">Connected</div>
@@ -86,9 +93,9 @@
 		pinButton.setAttribute('id', 'pinButton');
 		pinButton.textContent = 'Pin to local';
 
-		const downloadButton = document.createElement('button');
+		/*const downloadButton = document.createElement('button');
 		downloadButton.setAttribute('id', 'downloadButton');
-		downloadButton.textContent = 'Download Scene';
+		downloadButton.textContent = 'Download Scene';*/
 
 		const fetchButton = document.createElement('button');
 		fetchButton.textContent = 'Fetch from cold storage';
@@ -102,7 +109,7 @@
 		});
 
 		content.appendChild(pinButton);
-		content.appendChild(downloadButton);
+		// content.appendChild(downloadButton);
 		content.appendChild(fetchButton);
 		content.appendChild(codeButton);
 
@@ -120,6 +127,8 @@
 				to: '0x92d3267215Ec56542b985473E73C8417403B15ac',
 				value: ethers.parseUnits('0.001', 'ether')
 			});
+
+			alert(`Sent transaction: ${tx.hash}`);
 
 			const connectButton = document.querySelector(
 				'.MetamaskContainer .connectButton'
@@ -279,6 +288,7 @@
 			return;
 		}
 
+		console.log(feature.properties.PATH);
 		map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
 			'all',
 			['==', 'PATH', feature.properties.PATH],
@@ -318,8 +328,78 @@
 	}
 	function handleKeyDown(event: KeyboardEvent): void {
 		if (event.key === 'Enter' || event.key === ' ') {
-			clearSearch();
+			filterByQuery();
 		}
+	}
+
+	function filterByQuery() {
+		console.log(searchTerm);
+		if (searchTerm.toUpperCase().includes('PATH') && searchTerm.toUpperCase().includes('ROW')) {
+			let query = searchTerm.split(',');
+			let path = null,
+				row = null;
+
+			query.forEach((e: string) => {
+				if (e.toUpperCase().includes('PATH')) path = searchTerm.toUpperCase().split('PATH=')[1];
+				if (e.toUpperCase().includes('ROW')) row = searchTerm.toUpperCase().split('ROW=')[1];
+			});
+
+			if (path && row) {
+				map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+					'all',
+					['==', 'PATH', parseInt(path)],
+					['==', 'ROW', parseInt(row)]
+				]);
+
+				var features = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
+					sourceLayer: 'cid_enriched4-49jvb4',
+					filter: ['all', ['==', 'PATH', parseInt(path)], ['==', 'ROW', parseInt(row)]]
+				});
+
+				updateInspect(features);
+			}
+		} else if (searchTerm.toUpperCase().includes('PATH')) {
+			// Render path
+			let path = searchTerm.toUpperCase().split('PATH=')[1];
+			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', ['all', ['==', 'PATH', parseInt(path)]]);
+
+			var features = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
+				sourceLayer: 'cid_enriched4-49jvb4',
+				filter: ['all', ['==', 'PATH', parseInt(path)]]
+			});
+
+			updateInspect(features);
+		} else if (searchTerm.toUpperCase().includes('ROW')) {
+			// Render row
+			let row = searchTerm.toUpperCase().split('ROW=')[1];
+			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', ['all', ['==', 'ROW', parseInt(row)]]);
+
+			var features = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
+				sourceLayer: 'cid_enriched4-49jvb4',
+				filter: ['all', ['==', 'ROW', parseInt(row)]]
+			});
+
+			updateInspect(features);
+		} else {
+			// Clear filter
+			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+				'all',
+				['==', 'PATH', ''],
+				['==', 'ROW', '']
+			]);
+		}
+	}
+
+	function updateInspect(features: mapboxgl.MapboxGeoJSONFeature[]) {
+		let newFeatures: any[] = [];
+		features.forEach((feature) => {
+			if (feature.properties && !cidArray.includes(feature.properties.ipfs_cid)) {
+				cidArray.push(feature.properties.ipfs_cid);
+				newFeatures.push(feature);
+			}
+		});
+
+		selectedFeatures = newFeatures;
 	}
 
 	onMount(async () => {
@@ -376,6 +456,7 @@
 		id="searchInput"
 		type="text"
 		bind:value={searchTerm}
+		on:keydown={handleKeyDown}
 		class="search-bar"
 		placeholder="Search"
 	/>
@@ -415,44 +496,28 @@
 
 	<a href="https://pypi.org/project/ipfs-stac/" target="_blank">Get ipfs-stac</a>
 
-	{#if deals.Deals && deals.Deals?.length > 0}
-		<h2>Deals {deals.Deals?.length}</h2>
+	<br />
+	<h2>Download Scene with Kubo CLI</h2>
+	<hr />
+	<div class="snippet">
+		<p>ipfs get {cid}</p>
+	</div>
+
+	{#if providers.length > 0}
+		<h2>Providers {providers.length}</h2>
 		<hr />
-		{#each deals.Deals as deal}
+		{#each providers as prov}
 			<Accordion open={false}>
-				<span slot="head">Deal [{deal.DealID}]</span>
+				<span slot="head">Provider [{prov.Provider.ID}]</span>
 				<div slot="details">
 					<table>
 						<tr class="dealRow">
-							<th>Deal Duration</th>
-							<th
-								>{new Date(deal.DealInfo.Proposal.StartEpochAsDate).toISOString().substring(0, 10)} -
-								{new Date(deal.DealInfo.Proposal.EndEpochAsDate).toISOString().substring(0, 10)}</th
-							>
+							<th>Context ID</th>
+							<th>{prov.ContextID}</th>
 						</tr>
 						<tr class="dealRow">
-							<th>Storage Price Per Epoch</th>
-							<th>{deal.DealInfo.Proposal.StoragePricePerEpoch}</th>
-						</tr>
-						<tr class="dealRow">
-							<th>Provider Collateral</th>
-							<th>{deal.DealInfo.Proposal.ProviderCollateral}</th>
-						</tr>
-						<tr class="dealRow">
-							<th>Last Updated Epoch</th>
-							<th>{deal.DealInfo.State.LastUpdatedEpoch}</th>
-						</tr>
-						<tr class="dealRow">
-							<th>Piece CID</th>
-							<th>{deal.DealInfo.Proposal.PieceCID['/']}</th>
-						</tr>
-						<tr class="dealRow">
-							<th>Verified Deal?</th>
-							<th>{deal.DealInfo.Proposal.VerifiedDeal}</th>
-						</tr>
-						<tr class="dealRow">
-							<th>Client</th>
-							<th>{deal.DealInfo.Proposal.Client}</th>
+							<th>Address</th>
+							<th>{prov.Provider.Addrs[0]}</th>
 						</tr>
 					</table>
 				</div>
