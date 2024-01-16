@@ -6,7 +6,7 @@
 	<img src="easierLogo.png" alt="easier logo" />
 	<div class="header-txt">
 		<a href="/">Home</a>
-		<a href="/about">About Us</a>
+		<a href="/about">About</a>
 		<a href="/contact">Contact</a>
 	</div>
 </header>

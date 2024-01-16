@@ -22,6 +22,7 @@ export interface metadata {
 	ipfs: number;
 	filecoin: number;
 	unsealed: number;
+	Providers: any[];
 }
 
 export type RequestRedirect = 'error' | 'follow' | 'manual';
