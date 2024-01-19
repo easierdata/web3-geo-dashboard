@@ -22,25 +22,6 @@
 	section h1 {
 		font-size: 3.3rem;
 	}
-	input {
-		padding-left: 1rem;
-		height: calc(2.4em + 1.2rem + 2px);
-		border-radius: 0.2rem;
-		background-clip: padding-box;
-		transition: border-color 0.15s ease-in-out;
-	}
-	textarea {
-		padding-left: 1rem;
-		padding-top: 1rem;
-		font-family: 'Open Sans', sans-serif;
-	}
-	button {
-		width: 20%;
-		background-color: black;
-		color: #ffff;
-		border-radius: 0;
-		height: 2.4rem;
-	}
 
 	@media only screen and (max-width: 800px) {
 		.container {

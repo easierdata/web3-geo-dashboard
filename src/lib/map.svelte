@@ -246,20 +246,18 @@
 			});
 
 			features.forEach((feature) => {
-				// @ts-ignore
-				const path = feature.properties.PATH; //@ts-ignore
-				const row = feature.properties.ROW;
-				// @ts-ignore
-				feature.properties.PATHROW = `${path}${row}`;
+				if (feature.properties) {
+					const path = feature.properties.PATH;
+					const row = feature.properties.ROW;
+					feature.properties.PATHROW = `${path}${row}`;
+				}
 			});
 
-			console.log(features);
 			selectedFeatures = features;
 			features.forEach((feature) => {
 				if (feature.properties) cidArray.push(feature.properties.ipfs_cid);
 			});
 
-			// @ts-ignore
 			const mergedPathRows = features.map(
 				(feature) => `${feature.properties?.PATH}${feature.properties?.ROW}`
 			);
@@ -288,7 +286,6 @@
 			return;
 		}
 
-		console.log(feature.properties.PATH);
 		map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
 			'all',
 			['==', 'PATH', feature.properties.PATH],
@@ -351,30 +348,30 @@
 					['==', 'ROW', parseInt(row)]
 				]);
 
-				var features = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
+				var feat = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
 					sourceLayer: 'cid_enriched4-49jvb4',
 					filter: ['all', ['==', 'PATH', parseInt(path)], ['==', 'ROW', parseInt(row)]]
 				});
 
-				updateInspect(features);
+				updateInspect(feat);
 			}
 		} else if (searchTerm.toUpperCase().includes('PATH')) {
 			// Render path
 			let path = searchTerm.toUpperCase().split('PATH=')[1];
 			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', ['all', ['==', 'PATH', parseInt(path)]]);
 
-			var features = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
+			let feat = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
 				sourceLayer: 'cid_enriched4-49jvb4',
 				filter: ['all', ['==', 'PATH', parseInt(path)]]
 			});
 
-			updateInspect(features);
+			updateInspect(feat);
 		} else if (searchTerm.toUpperCase().includes('ROW')) {
 			// Render row
 			let row = searchTerm.toUpperCase().split('ROW=')[1];
 			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', ['all', ['==', 'ROW', parseInt(row)]]);
 
-			var features = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
+			let features = map.querySourceFeatures('LANDSAT_SCENE_OUTLINES', {
 				sourceLayer: 'cid_enriched4-49jvb4',
 				filter: ['all', ['==', 'ROW', parseInt(row)]]
 			});
@@ -403,11 +400,9 @@
 	}
 
 	onMount(async () => {
-		// @ts-ignore
 		if (!import.meta.env.VITE_MAPBOX_TOKEN) {
 			throw new Error('MAPBOX_TOKEN is required');
 		}
-		// @ts-ignore
 		mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 		map = new mapboxgl.Map({
