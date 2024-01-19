@@ -14,9 +14,10 @@
 	<h3>Project Setup</h3>
 	<h5>Configure Node</h5>
 	<p>
-		Update your IPFS node's configuration to accept requests from your IP and this domain by adding
-		the fields to "API"/"HTTPHeaders"/"Accept-Control-Allow-Origin". Alternatively, you can use an
-		asterisk for all "*" (not recommended)
+		Update your IPFS node's configuration to accept requests from your IP and this URL
+		(http://dashboard.easierdata.org, https://dashboard.easierdata.org) by adding the fields to
+		"API"/"HTTPHeaders"/"Accept-Control-Allow-Origin". Alternatively, you can use an asterisk for
+		all "*" (not recommended)
 	</p>
 	<h5>Configure Chrome extension</h5>
 	<p>
