@@ -10,7 +10,7 @@ async function main(): Promise<void> {
 	const newGeo = geojson;
 
 	for (let x = 0; x < geojson.features.length; x++) {
-		console.log(x);
+		console.log(`Fetching details for feature: ${x}`);
 		const feature = geojson.features[x];
 
 		const cid = await getCID(feature.properties.PATH, feature.properties.ROW);
@@ -22,6 +22,7 @@ async function main(): Promise<void> {
 			newGeo.features[x]['properties']['s3'] = cid[2];
 			newGeo.features[x]['properties']['filename'] =
 				cid[2].split('/')[cid[2].split('/').length - 1];
+			newGeo.features[x]['properties']['ipfs_cid'] = cid[3];
 		}
 	}
 
@@ -40,9 +41,10 @@ async function getCID(path: number, row: number): Promise<string[] | null> {
 
 	try {
 		return [
-			response.data.features[0].assets.SAA.alternate.IPFS.href.split('/')[2],
+			response.data.features[0].assets.SAA.alternate.Filecoin.href.split('/')[2],
 			response.data.features[0].properties.datetime,
-			response.data.features[0].assets.SAA.alternate['s3'].href
+			response.data.features[0].assets.SAA.alternate['s3'].href,
+			response.data.features[0].assets.SAA.alternate.IPFS.href.split('/')[2]
 		];
 	} catch {
 		console.log('CID Not found');

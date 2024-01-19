@@ -1,9 +1,13 @@
 <section class="container">
 	<h1 class="contact-text">Contact</h1>
+	<h4>Email: <a href="mailto:toshan@umd.edu">toshan@umd.edu</a></h4>
+	<h4>Website: <a href="https://easierdata.org/" target="_blank">easierdata.org</a></h4>
+	<!--
 	<input type="text" placeholder="name *" />
 	<input type="email" name="" placeholder="email address *" />
 	<textarea rows="10" placeholder="Message *" />
 	<button type="submit">Submit</button>
+	-->
 </section>
 
 <style>
@@ -18,25 +22,6 @@
 	section h1 {
 		font-size: 3.3rem;
 	}
-	input {
-		padding-left: 1rem;
-		height: calc(2.4em + 1.2rem + 2px);
-		border-radius: 0.2rem;
-		background-clip: padding-box;
-		transition: border-color 0.15s ease-in-out;
-	}
-	textarea {
-		padding-left: 1rem;
-		padding-top: 1rem;
-		font-family: 'Open Sans', sans-serif;
-	}
-	button {
-		width: 20%;
-		background-color: black;
-		color: #ffff;
-		border-radius: 0;
-		height: 2.4rem;
-	}
 
 	@media only screen and (max-width: 800px) {
 		.container {
@@ -44,10 +29,6 @@
 		}
 		section h1 {
 			font-size: 1.5rem;
-		}
-		button {
-			width: 30%;
-			height: 2rem;
 		}
 	}
 </style>
