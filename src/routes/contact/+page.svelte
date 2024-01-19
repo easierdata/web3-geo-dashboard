@@ -30,9 +30,5 @@
 		section h1 {
 			font-size: 1.5rem;
 		}
-		button {
-			width: 30%;
-			height: 2rem;
-		}
 	}
 </style>
