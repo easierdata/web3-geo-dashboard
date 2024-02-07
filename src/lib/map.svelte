@@ -324,13 +324,13 @@
 			inputElement.focus();
 		}
 	}
-	function handleKeyDown(event: KeyboardEvent): void {
+	async function handleKeyDown(event: KeyboardEvent): Promise<void> {
 		if (event.key === 'Enter' || event.key === ' ') {
-			filterByQuery();
+			await filterByQuery();
 		}
 	}
 
-	function filterByQuery() {
+	async function filterByQuery() {
 		console.log(searchTerm);
 		if (searchTerm.toUpperCase().includes('PATH') && searchTerm.toUpperCase().includes('ROW')) {
 			let query = searchTerm.split(',');
@@ -378,6 +378,22 @@
 			});
 
 			updateInspect(features);
+		} else if (searchTerm.includes(' ') && searchTerm.length > 3) {
+			console.log(searchTerm);
+
+			const response = await fetch(
+				`https://easier-dashboard-m5eh5d9da-matthewnanas.vercel.app/api/geocode/${searchTerm}`
+			);
+			if (!response.ok) {
+				throw new Error(`Error fetching geolocation for ${searchTerm}: ${response.statusText}`);
+			}
+			const data = await response.json();
+
+			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+				'all',
+				['==', 'PATH', data.path],
+				['==', 'ROW', data.row]
+			]);
 		} else {
 			// Clear filter
 			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
@@ -452,7 +468,9 @@
 		id="searchInput"
 		type="text"
 		bind:value={searchTerm}
-		on:keydown={handleKeyDown}
+		on:keydown={async (e) => {
+			await handleKeyDown(e);
+		}}
 		class="search-bar"
 		placeholder="Search"
 	/>
@@ -461,7 +479,9 @@
 		role="button"
 		tabindex="0"
 		on:click={clearSearch}
-		on:keydown={handleKeyDown}>x</span
+		on:keydown={async (e) => {
+			await handleKeyDown(e);
+		}}>x</span
 	>
 </div>
 
