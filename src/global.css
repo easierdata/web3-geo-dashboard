@@ -110,6 +110,16 @@ button:hover {
 	line-height: normal; /* adjusts the line height to match surrounding text */
 }
 
+.ipfs-cid-text {
+	display: inline-block; /* allows the use of width and text-overflow */
+	width: 200px;
+	white-space: nowrap; /* keeps the text on a single line */
+	overflow: hidden; /* ensures that the text doesn't spill over */
+	text-overflow: ellipsis; /* adds the ellipsis when the text overflows */
+	vertical-align: middle; /* centers the text vertically on the line */
+	line-height: normal; /* adjusts the line height to match surrounding text */
+}
+
 /* =============
 footer
 ============= */
@@ -117,10 +127,9 @@ footer
 footer {
 	width: 100%;
 	display: flex;
-	position: fixed;
+	position: relative;
 	left: 0;
-	bottom: 0;
-	padding: 1rem;
+	bottom: 7%;
 }
 
 footer a {

@@ -36,8 +36,9 @@ You can preview the production build with `npm run preview`.
   - 🍴 Fork this repo!
 
 - **Option 2**
+
   - 👯 Clone to your local machine using:
-    `https://github.com/jsolly/blogthedata.git`
+    `https://github.com/easierdata/web3-geo-dashboard.git`
 
 ### Step 2
 
@@ -46,8 +47,8 @@ You can preview the production build with `npm run preview`.
 ### Step 3
 
 - 🔃 Create a new pull request using:
-  <a href="https://github.com/easierdata/web3-geo-dashboard/compare" rel="noopener noreferrer" target="_blank">
-  `https://github.com/easierdata/web3-geo-dashboard/compare`</a>.
+  `<a href="https://github.com/easierdata/web3-geo-dashboard/compare" rel="noopener noreferrer" target="_blank">`
+  `https://github.com/easierdata/web3-geo-dashboard/compare</a>`.
 
 ## Pre-commit Hooks
 
@@ -67,3 +68,7 @@ Tests are located in `/test` and are using Vitetest. Please write at least one t
 npm run test
 npm run coverage
 ```
+
+## Runtime Requirements
+
+For the optimal user experience, please download and configure the [complementary chrome extension](https://github.com/easierdata/web3-geo-extension) and configure it to point to your node.

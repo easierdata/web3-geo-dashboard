@@ -1,11 +1,14 @@
 type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`;
 
 interface CustomFeatureProperties {
+	piece: string;
+	ipfs_cid: string;
 	ROW: string;
 	PATH: string;
 	cid: string;
 	datetime: ISODateString;
 	s3: string;
+	filename: string;
 	// IPFS_NODES: number;
 	// FIL_DEALS: number;
 	// ON_S3: boolean;
@@ -19,6 +22,7 @@ export interface metadata {
 	ipfs: number;
 	filecoin: number;
 	unsealed: number;
+	Providers: any[];
 }
 
 export type RequestRedirect = 'error' | 'follow' | 'manual';
