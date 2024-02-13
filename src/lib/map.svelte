@@ -646,6 +646,7 @@
 		<div>
 			<button on:click={connectWallet}>Fetch From Cold Storage</button>
 			<button id="multiPin">Multi Pin</button>
+			<p id="cidArray" class="hidden">{JSON.stringify(cidArray)}</p>
 		</div>
 	</div>
 {/if}
@@ -667,6 +668,10 @@
 
 	#cid-list {
 		font-size: 10px;
+	}
+
+	.hidden {
+		display: none;
 	}
 
 	.side-snippet {
