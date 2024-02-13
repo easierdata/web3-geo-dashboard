@@ -46,16 +46,16 @@
 		const properties = feature.properties;
 		console.log(properties);
 
-		/*const response = await fetch(
+		const response = await fetch(
 			`https://filecoin.tools/api/deals/list?page=1&per_page=20&selector=${properties.piece}&sort_by_column=status&sort_direction=-1`,
 			{
 				method: 'GET'
 			}
 		);
 
-		deals = await response.json();*/
-		deals = [];
-		console.log(deals);
+		deals = await response.json();
+		/*deals = [];
+		console.log(deals);*/
 
 		providers = [];
 		const metadata = await getPopupMetadata(properties.cid);
@@ -68,6 +68,7 @@
 		const content = document.createElement('div');
 		content.innerHTML = `
 		<b>Inspect Tile</b><br>
+		<span class="name-text">Name: ${properties.filename}</span><br>
 		<span class="cid-text">Filecoin CID: ${properties.cid}</span><br>
 		<span class="ipfs-cid-text">IPFS CID: ${properties.ipfs_cid}</span><br>
 		Row: ${properties.ROW}<br>
@@ -323,13 +324,13 @@
 			inputElement.focus();
 		}
 	}
-	function handleKeyDown(event: KeyboardEvent): void {
+	async function handleKeyDown(event: KeyboardEvent): Promise<void> {
 		if (event.key === 'Enter' || event.key === ' ') {
-			filterByQuery();
+			await filterByQuery();
 		}
 	}
 
-	function filterByQuery() {
+	async function filterByQuery() {
 		console.log(searchTerm);
 		if (searchTerm.toUpperCase().includes('PATH') && searchTerm.toUpperCase().includes('ROW')) {
 			let query = searchTerm.split(',');
@@ -377,6 +378,22 @@
 			});
 
 			updateInspect(features);
+		} else if (searchTerm.includes(' ') && searchTerm.length > 3) {
+			console.log(searchTerm);
+
+			const response = await fetch(
+				`https://easier-dashboard-m5eh5d9da-matthewnanas.vercel.app/api/geocode/${searchTerm}`
+			);
+			if (!response.ok) {
+				throw new Error(`Error fetching geolocation for ${searchTerm}: ${response.statusText}`);
+			}
+			const data = await response.json();
+
+			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+				'all',
+				['==', 'PATH', data.path],
+				['==', 'ROW', data.row]
+			]);
 		} else {
 			// Clear filter
 			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
@@ -451,7 +468,9 @@
 		id="searchInput"
 		type="text"
 		bind:value={searchTerm}
-		on:keydown={handleKeyDown}
+		on:keydown={async (e) => {
+			await handleKeyDown(e);
+		}}
 		class="search-bar"
 		placeholder="Search"
 	/>
@@ -460,7 +479,9 @@
 		role="button"
 		tabindex="0"
 		on:click={clearSearch}
-		on:keydown={handleKeyDown}>x</span
+		on:keydown={async (e) => {
+			await handleKeyDown(e);
+		}}>x</span
 	>
 </div>
 
@@ -513,6 +534,51 @@
 						<tr class="dealRow">
 							<th>Address</th>
 							<th>{prov.Provider.Addrs[0]}</th>
+						</tr>
+					</table>
+				</div>
+			</Accordion>
+		{/each}
+	{/if}
+
+	{#if deals.Deals && deals.Deals?.length > 0}
+		<h2>Deals {deals.Deals?.length}</h2>
+		<hr />
+		{#each deals.Deals as deal}
+			<Accordion open={false}>
+				<span slot="head">Deal [{deal.DealID}]</span>
+				<div slot="details">
+					<table>
+						<tr class="dealRow">
+							<th>Deal Duration</th>
+							<th
+								>{new Date(deal.DealInfo.Proposal.StartEpochAsDate).toISOString().substring(0, 10)} -
+								{new Date(deal.DealInfo.Proposal.EndEpochAsDate).toISOString().substring(0, 10)}</th
+							>
+						</tr>
+						<tr class="dealRow">
+							<th>Storage Price Per Epoch</th>
+							<th>{deal.DealInfo.Proposal.StoragePricePerEpoch}</th>
+						</tr>
+						<tr class="dealRow">
+							<th>Provider Collateral</th>
+							<th>{deal.DealInfo.Proposal.ProviderCollateral}</th>
+						</tr>
+						<tr class="dealRow">
+							<th>Last Updated Epoch</th>
+							<th>{deal.DealInfo.State.LastUpdatedEpoch}</th>
+						</tr>
+						<tr class="dealRow">
+							<th>Piece CID</th>
+							<th>{deal.DealInfo.Proposal.PieceCID['/']}</th>
+						</tr>
+						<tr class="dealRow">
+							<th>Verified Deal?</th>
+							<th>{deal.DealInfo.Proposal.VerifiedDeal}</th>
+						</tr>
+						<tr class="dealRow">
+							<th>Client</th>
+							<th>{deal.DealInfo.Proposal.Client}</th>
 						</tr>
 					</table>
 				</div>
