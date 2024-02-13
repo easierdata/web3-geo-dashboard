@@ -642,6 +642,11 @@
 				&emsp; assets.append(data)
 			</p>
 		</div>
+		<h5>Interface</h5>
+		<div>
+			<button on:click={connectWallet}>Fetch From Cold Storage</button>
+			<button id="multiPin">Multi Pin</button>
+		</div>
 	</div>
 {/if}
 
