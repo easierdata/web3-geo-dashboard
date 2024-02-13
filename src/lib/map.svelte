@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Loader } from '@googlemaps/js-api-loader';
 	import mapboxgl, { Map } from 'mapbox-gl';
 	import { ethers } from 'ethers';
 	import { onMount, onDestroy } from 'svelte';
@@ -18,6 +19,14 @@
 	let box: any;
 	let selectedFeatures: any[] = [];
 	let cidArray: string[] = [];
+
+	let autocomplete: any;
+	let address: any;
+
+	const options = {
+		componentRestrictions: { country: 'au' },
+		strictBounds: false
+	};
 
 	let map: Map;
 	async function getPopupMetadata(cid: string): Promise<metadata | undefined> {
@@ -417,6 +426,25 @@
 	}
 
 	onMount(async () => {
+		const loader = new Loader({
+			apiKey: import.meta.env.VITE_GOOGLEAPIKEY,
+			version: 'weekly',
+			libraries: ['places']
+		});
+
+		loader.loadCallback((e) => {
+			if (e) {
+				console.log(e);
+			} else {
+				autocomplete = new google.maps.places.Autocomplete( //@ts-ignore
+					document.getElementById('autocomplete'),
+					options
+				);
+			}
+
+			autocomplete.addListener('place_changed', onPlaceChanged);
+		});
+
 		if (!import.meta.env.VITE_MAPBOX_TOKEN) {
 			throw new Error('MAPBOX_TOKEN is required');
 		}
@@ -455,6 +483,10 @@
 		});
 	});
 
+	function onPlaceChanged() {
+		address = autocomplete.getPlace();
+	}
+
 	onDestroy(() => {
 		if (map) {
 			map.remove();
@@ -464,7 +496,7 @@
 
 <div class="search-container">
 	<i class="fa fa-search search-icon" />
-	<input
+	<!-- <input
 		id="searchInput"
 		type="text"
 		bind:value={searchTerm}
@@ -473,7 +505,8 @@
 		}}
 		class="search-bar"
 		placeholder="Search"
-	/>
+	/> -->
+	<input type="text" name="autocomplete" id="autocomplete" class="search-bar" autocomplete="off" />
 	<span
 		class="clear-button"
 		role="button"
@@ -481,8 +514,10 @@
 		on:click={clearSearch}
 		on:keydown={async (e) => {
 			await handleKeyDown(e);
-		}}>x</span
+		}}
 	>
+		x
+	</span>
 </div>
 
 <div id="map" />
@@ -690,7 +725,7 @@
 		display: flex;
 		align-items: center;
 		position: absolute;
-		width: 80%;
+		width: 100%;
 		top: 8rem;
 		left: 3rem;
 		z-index: 1;
