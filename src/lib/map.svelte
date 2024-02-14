@@ -21,10 +21,9 @@
 	let cidArray: string[] = [];
 
 	let autocomplete: any;
-	let address: any;
 
 	const options = {
-		componentRestrictions: { country: 'au' },
+		componentRestrictions: { country: 'us' },
 		strictBounds: false
 	};
 
@@ -437,7 +436,7 @@
 				console.log(e);
 			} else {
 				autocomplete = new google.maps.places.Autocomplete( //@ts-ignore
-					document.getElementById('autocomplete'),
+					document.getElementById('searchInput'),
 					options
 				);
 			}
@@ -484,7 +483,8 @@
 	});
 
 	function onPlaceChanged() {
-		address = autocomplete.getPlace();
+		let address = autocomplete.getPlace();
+		searchTerm = address.formatted_address;
 	}
 
 	onDestroy(() => {
@@ -496,17 +496,18 @@
 
 <div class="search-container">
 	<i class="fa fa-search search-icon" />
-	<!-- <input
-		id="searchInput"
+	<input
 		type="text"
+		name="autocomplete"
+		id="searchInput"
+		class="search-bar"
+		autocomplete="off"
+		placeholder="Search"
 		bind:value={searchTerm}
 		on:keydown={async (e) => {
 			await handleKeyDown(e);
 		}}
-		class="search-bar"
-		placeholder="Search"
-	/> -->
-	<input type="text" name="autocomplete" id="autocomplete" class="search-bar" autocomplete="off" />
+	/>
 	<span
 		class="clear-button"
 		role="button"
