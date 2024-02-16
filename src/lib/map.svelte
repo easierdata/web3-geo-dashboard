@@ -22,11 +22,6 @@
 
 	let autocomplete: any;
 
-	const options = {
-		componentRestrictions: { country: 'us' },
-		strictBounds: false
-	};
-
 	let map: Map;
 	async function getPopupMetadata(cid: string): Promise<metadata | undefined> {
 		const requestOptions: RequestInit = {
@@ -435,10 +430,9 @@
 			if (e) {
 				console.log(e);
 			} else {
-				autocomplete = new google.maps.places.Autocomplete( //@ts-ignore
-					document.getElementById('searchInput'),
-					options
-				);
+				autocomplete = new google.maps.places.Autocomplete(document.getElementById('searchInput'), { //@ts-ignore
+					strictBounds: false
+				});
 			}
 
 			autocomplete.addListener('place_changed', onPlaceChanged);
