@@ -430,7 +430,9 @@
 			if (e) {
 				console.log(e);
 			} else {
-				autocomplete = new google.maps.places.Autocomplete(document.getElementById('searchInput'), { //@ts-ignore
+				let input: any = document.getElementById('searchInput');
+
+				autocomplete = new google.maps.places.Autocomplete(input, {
 					strictBounds: false
 				});
 			}
