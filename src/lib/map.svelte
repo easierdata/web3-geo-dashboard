@@ -432,7 +432,7 @@
 			} else {
 				let input: any = document.getElementById('searchInput');
 
-				// @ts-ignore
+				const google = window.google;
 				autocomplete = new google.maps.places.Autocomplete(input, {
 					strictBounds: false
 				});
