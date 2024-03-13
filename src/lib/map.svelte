@@ -9,6 +9,9 @@
 
 	let showModal = false;
 	let cid = '';
+	let stac_endpoint = 'http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/';
+	let geojson_endpoint =
+		'https://raw.githubusercontent.com/easierdata/web3-geo-dashboard/feat-custom-geojson/data_processing/cid_enriched.geojson';
 
 	let deals: any = {};
 	let providers: any = [];
@@ -23,6 +26,7 @@
 	let autocomplete: any;
 
 	let map: Map;
+
 	async function getPopupMetadata(cid: string): Promise<metadata | undefined> {
 		const requestOptions: RequestInit = {
 			method: 'GET',
@@ -155,33 +159,35 @@
 
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
-			type: 'vector',
-			url: 'mapbox://mnanas2004.alx6bsr0'
+			type: 'geojson',
+			data: geojson_endpoint
 		});
 
-		map.addLayer({
-			id: 'LANDSAT_SCENE_OUTLINES-layer',
-			type: 'fill',
-			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched4-49jvb4',
-			paint: {
-				'fill-color': 'grey',
-				'fill-opacity': 0.2,
-				'fill-outline-color': 'black'
+		map.on('sourcedata', function (e) {
+			if (e.sourceId === 'LANDSAT_SCENE_OUTLINES' && map.isSourceLoaded('LANDSAT_SCENE_OUTLINES')) {
+				map.addLayer({
+					id: 'LANDSAT_SCENE_OUTLINES-layer',
+					type: 'fill',
+					source: 'LANDSAT_SCENE_OUTLINES',
+					paint: {
+						'fill-color': 'grey',
+						'fill-opacity': 0.2,
+						'fill-outline-color': 'black'
+					}
+				});
+
+				map.addLayer({
+					id: 'LANDSAT_SCENE_OUTLINES-highlighted',
+					type: 'fill',
+					source: 'LANDSAT_SCENE_OUTLINES',
+					paint: {
+						'fill-outline-color': 'black',
+						'fill-color': '#484896',
+						'fill-opacity': 0.75
+					},
+					filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
+				});
 			}
-		});
-
-		map.addLayer({
-			id: 'LANDSAT_SCENE_OUTLINES-highlighted',
-			type: 'fill',
-			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched4-49jvb4',
-			paint: {
-				'fill-outline-color': 'black',
-				'fill-color': '#484896',
-				'fill-opacity': 0.75
-			},
-			filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
 		});
 	}
 
@@ -420,6 +426,14 @@
 	}
 
 	onMount(async () => {
+		const stac = sessionStorage.getItem('stac');
+		const geojson = sessionStorage.getItem('geojson');
+
+		if (stac && geojson && stac != '' && geojson != '') {
+			stac_endpoint = stac;
+			geojson_endpoint = geojson;
+		}
+
 		const loader = new Loader({
 			apiKey: import.meta.env.VITE_GOOGLEAPIKEY,
 			version: 'weekly',
@@ -532,9 +546,7 @@
 		<h3>Connect to STAC server and fetch CID</h3>
 		<div class="snippet">
 			<p>
-				my_client =
-				client.Web3(stac_endpoint="http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/",
-				local_gateway="127.0.0.1")
+				my_client = client.Web3(stac_endpoint="{stac_endpoint}", local_gateway="127.0.0.1")
 				<br />
 				data = my_client.getFromCID("{cid}")
 			</p>
@@ -661,9 +673,7 @@
 		<h5>Connect to STAC server and fetch CIDs</h5>
 		<div class="side-snippet">
 			<p>
-				my_client =
-				client.Web3(stac_endpoint="http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/",
-				local_gateway="127.0.0.1")
+				my_client = client.Web3(stac_endpoint="{stac_endpoint}", local_gateway="127.0.0.1")
 				<br />
 				<br />
 				assets = [] <br />

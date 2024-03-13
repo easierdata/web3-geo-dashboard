@@ -1,15 +1,11 @@
-<!-- <script lang="ts">
-	import Map from '../lib/map.svelte';
-</script> -->
-
-<!-- <Map /> -->
-
 <script>
 	let stac_endpoint = '';
 	let geojson_endpoint = '';
 
 	function handleSubmit() {
-		window.location.href = `/map?stac=${stac_endpoint}&geojson=${geojson_endpoint}`;
+		window.sessionStorage.setItem('stac', stac_endpoint);
+		window.sessionStorage.setItem('geojson', geojson_endpoint);
+		window.location.href = '/map';
 	}
 </script>
 
@@ -23,7 +19,7 @@
 				class="url-input"
 				bind:value={geojson_endpoint}
 			/>
-			<button style="margin-top: 5px;">Load Map</button>
+			<button style="margin-top: 5px;" on:click={handleSubmit}>Load Map</button>
 		</form>
 		<p>*Leave blank for demo*</p>
 	</div>
