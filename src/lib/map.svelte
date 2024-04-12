@@ -101,10 +101,6 @@
 		pinButton.setAttribute('id', 'pinButton');
 		pinButton.textContent = 'Pin to local';
 
-		/*const downloadButton = document.createElement('button');
-		downloadButton.setAttribute('id', 'downloadButton');
-		downloadButton.textContent = 'Download Scene';*/
-
 		const fetchButton = document.createElement('button');
 		fetchButton.textContent = 'Fetch from cold storage';
 		fetchButton.addEventListener('click', connectWallet);
@@ -117,7 +113,6 @@
 		});
 
 		content.appendChild(pinButton);
-		// content.appendChild(downloadButton);
 		content.appendChild(fetchButton);
 		content.appendChild(codeButton);
 
@@ -466,6 +461,8 @@
 			center: [-98.5795, 39.8283],
 			zoom: 3
 		});
+
+		map.addControl(new mapboxgl.NavigationControl());
 
 		map.on('load', () => {
 			canvas = map.getCanvasContainer();
