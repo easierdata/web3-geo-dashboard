@@ -5,9 +5,16 @@
 	import { onMount, onDestroy } from 'svelte';
 	import type { Web3EnrichedMapboxFeature, metadata, RequestRedirect, RequestInit } from '../types';
 	import Modal from './modal.svelte';
+	import AddLayer from './addLayer.svelte';
 	import Accordion from './accordion.svelte';
 
 	let showModal = false;
+
+	// Add layer modal values
+	let showAddLayer = false;
+	let addStac = '';
+	let addGeojson = '';
+
 	let cid = '';
 	let stac_endpoint = 'http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/';
 	let geojson_endpoint =
@@ -420,6 +427,28 @@
 		selectedFeatures = newFeatures;
 	}
 
+	// Custom layer button control
+	class LayerButton {
+		onAdd() {
+			const div = document.createElement('div');
+			div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+			div.innerHTML = `
+			<button>
+				<svg focusable="false" viewBox="0 0 24 24" aria-hidden="true" style="font-size: 20px;">
+					<path d="M4 18h16v-2H4v2zM4 13h16v-2H4v2zM4 6v2h16V6H4z"></path>
+				</svg>
+			</button>`;
+			div.addEventListener('contextmenu', (e) => e.preventDefault());
+			div.addEventListener('click', () => {
+				showAddLayer = true;
+				addGeojson = '';
+				addStac = '';
+			});
+
+			return div;
+		}
+	}
+
 	onMount(async () => {
 		const stac = sessionStorage.getItem('stac');
 		const geojson = sessionStorage.getItem('geojson');
@@ -462,7 +491,10 @@
 			zoom: 3
 		});
 
-		map.addControl(new mapboxgl.NavigationControl());
+		const addLayerButton: any = new LayerButton();
+		const defaultControls = new mapboxgl.NavigationControl();
+		map.addControl(defaultControls, 'top-right');
+		map.addControl(addLayerButton, 'bottom-right');
 
 		map.on('load', () => {
 			canvas = map.getCanvasContainer();
@@ -628,6 +660,31 @@
 		{/each}
 	{/if}
 </Modal>
+
+<AddLayer bind:showAddLayer>
+	<center>
+		<h3>Add New Layer</h3>
+	</center>
+	<form>
+		<input
+			type="text"
+			placeholder="STAC API URL"
+			class="url-input"
+			bind:value={addStac}
+			style="width: 100%;"
+		/>
+		<br />
+		<input
+			type="text"
+			placeholder="GeoJSON URL"
+			class="url-input"
+			bind:value={addGeojson}
+			style="width: 100%; margin-top: 15px;"
+		/>
+		<br />
+		<button style="margin-top: 5px;">Add Layer</button>
+	</form>
+</AddLayer>
 
 {#if selectedFeatures.length > 0}
 	<div id="side-container">
