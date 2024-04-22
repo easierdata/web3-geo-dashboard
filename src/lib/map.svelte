@@ -20,6 +20,9 @@
 	let geojson_endpoint =
 		'https://raw.githubusercontent.com/easierdata/web3-geo-dashboard/feat-custom-geojson/data_processing/cid_enriched.geojson';
 
+	// Store multiple geojsons
+	let additional_endpoints = [];
+
 	let deals: any = {};
 	let providers: any = [];
 
@@ -156,6 +159,56 @@
 			}
 		} else {
 			alert('Metamask not detected!');
+		}
+	}
+
+	// to-do account for stac catalog url
+	function addNewLayer(): void {
+		if (addGeojson !== '') {
+			additional_endpoints.push(addGeojson);
+
+			const index = additional_endpoints.length - 1;
+
+			const sourceId = `geojson-source-${index}`;
+			const layerId = `geojson-layer-${index}`;
+			const highlightedLayerId = `geojson-highlighted-layer-${index}`;
+
+			map.addSource(sourceId, {
+				type: 'geojson',
+				data: addGeojson
+			});
+
+			map.on('sourcedata', function (e) {
+				if (e.sourceId === sourceId && map.isSourceLoaded(sourceId)) {
+					map.addLayer({
+						id: layerId,
+						type: 'fill',
+						source: sourceId,
+						paint: {
+							'fill-color': 'grey',
+							'fill-opacity': 0.2,
+							'fill-outline-color': 'black'
+						}
+					});
+
+					map.addLayer({
+						id: highlightedLayerId,
+						type: 'fill',
+						source: sourceId,
+						paint: {
+							'fill-outline-color': 'black',
+							'fill-color': '#484896',
+							'fill-opacity': 0.75
+						},
+						filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
+					});
+				}
+			});
+
+			addGeojson = '';
+			addStac = '';
+		} else {
+			alert('Please enter a GeoJSON URL');
 		}
 	}
 
@@ -453,8 +506,11 @@
 		const stac = sessionStorage.getItem('stac');
 		const geojson = sessionStorage.getItem('geojson');
 
-		if (stac && geojson && stac != '' && geojson != '') {
+		if (stac && stac != '') {
 			stac_endpoint = stac;
+		}
+
+		if (geojson && geojson != '') {
 			geojson_endpoint = geojson;
 		}
 
@@ -682,7 +738,7 @@
 			style="width: 100%; margin-top: 15px;"
 		/>
 		<br />
-		<button style="margin-top: 5px;">Add Layer</button>
+		<button style="margin-top: 5px;" on:click={() => addNewLayer()}>Add Layer</button>
 	</form>
 </AddLayer>
 
