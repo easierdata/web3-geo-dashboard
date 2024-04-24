@@ -32,6 +32,7 @@
 	let box: any;
 	let selectedFeatures: any[] = [];
 	let cidArray: string[] = [];
+	let exportfeatures: any[] = [];
 
 	let autocomplete: any;
 
@@ -308,6 +309,16 @@
 		if (bbox) {
 			const features = map.queryRenderedFeatures(bbox, {
 				layers: ['LANDSAT_SCENE_OUTLINES-layer']
+			});
+
+			// Construct export features
+			exportfeatures = [];
+			features.forEach((feature) => {
+				exportfeatures.push({
+					type: 'Feature',
+					geometry: feature.geometry,
+					properties: feature.properties
+				});
 			});
 
 			features.forEach((feature) => {
@@ -799,7 +810,9 @@
 		<div>
 			<button on:click={connectWallet}>Fetch From Cold Storage</button>
 			<button id="multiPin">Multi Pin</button>
+			<button id="export">Export</button>
 			<p id="cidArray" class="hidden">{JSON.stringify(cidArray)}</p>
+			<p id="exportFeatures" class="hidden">{JSON.stringify(exportfeatures)}</p>
 		</div>
 	</div>
 {/if}
