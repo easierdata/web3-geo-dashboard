@@ -7,21 +7,20 @@
 	import Modal from './modal.svelte';
 	import AddLayer from './addLayer.svelte';
 	import Accordion from './accordion.svelte';
+	import LayerAccordion from './layer_accordion.svelte';
 
 	let showModal = false;
 
 	// Add layer modal values
 	let showAddLayer = false;
 	let addStac = '';
-	let addGeojson = '';
+
+	let stac_api_layers: any[] = [];
 
 	let cid = '';
 	let stac_endpoint = 'http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/';
 	let geojson_endpoint =
 		'https://raw.githubusercontent.com/easierdata/web3-geo-dashboard/feat-custom-geojson/data_processing/cid_enriched.geojson';
-
-	// Store multiple geojsons
-	let additional_endpoints = [];
 
 	let deals: any = {};
 	let providers: any = [];
@@ -163,54 +162,43 @@
 		}
 	}
 
+	const get_collections = async (url: string) => {
+		const response = await fetch(`${url}/collections`);
+		const data = await response.json();
+		return data;
+	};
+
 	// to-do account for stac catalog url
-	function addNewLayer(): void {
-		if (addGeojson !== '') {
-			additional_endpoints.push(addGeojson);
+	async function addNewLayer(): Promise<void> {
+		let metadata: any = {
+			url: addStac,
+			collections: []
+		};
 
-			const index = additional_endpoints.length - 1;
+		const collections = await get_collections(addStac);
+		console.log(collections.collections);
 
-			const sourceId = `geojson-source-${index}`;
-			const layerId = `geojson-layer-${index}`;
-			const highlightedLayerId = `geojson-highlighted-layer-${index}`;
+		for (let x = 0; x < collections.collections.length; x++) {
+			const collection = collections.collections[x];
+			let collection_data = {
+				id: collection.id,
+				title: collection.title,
+				features: []
+			};
 
-			map.addSource(sourceId, {
-				type: 'geojson',
-				data: addGeojson
-			});
+			const features = await fetch(`${addStac}/collections/${collection.id}/items`);
+			const feature_data = await features.json();
 
-			map.on('sourcedata', function (e) {
-				if (e.sourceId === sourceId && map.isSourceLoaded(sourceId)) {
-					map.addLayer({
-						id: layerId,
-						type: 'fill',
-						source: sourceId,
-						paint: {
-							'fill-color': 'grey',
-							'fill-opacity': 0.2,
-							'fill-outline-color': 'black'
-						}
-					});
-
-					map.addLayer({
-						id: highlightedLayerId,
-						type: 'fill',
-						source: sourceId,
-						paint: {
-							'fill-outline-color': 'black',
-							'fill-color': '#484896',
-							'fill-opacity': 0.75
-						},
-						filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
-					});
-				}
-			});
-
-			addGeojson = '';
-			addStac = '';
-		} else {
-			alert('Please enter a GeoJSON URL');
+			collection_data.features = feature_data.features;
+			console.log(collection_data);
+			metadata.collections.push(collection_data);
 		}
+
+		console.log(metadata);
+		stac_api_layers = [...stac_api_layers, metadata];
+
+		addStac = '';
+		showAddLayer = false;
 	}
 
 	function setupLayer() {
@@ -505,12 +493,21 @@
 			div.addEventListener('contextmenu', (e) => e.preventDefault());
 			div.addEventListener('click', () => {
 				showAddLayer = true;
-				addGeojson = '';
+				//addGeojson = '';
 				addStac = '';
 			});
 
 			return div;
 		}
+	}
+
+	function handle_delete(url: string) {
+		console.log(url);
+		const index = stac_api_layers.findIndex((layer: any) => layer.url === url);
+		console.log(index);
+		stac_api_layers = stac_api_layers.slice(0, index).concat(stac_api_layers.slice(index + 1));
+
+		console.log(stac_api_layers);
 	}
 
 	onMount(async () => {
@@ -741,79 +738,125 @@
 			style="width: 100%;"
 		/>
 		<br />
-		<input
+		<!-- <input
 			type="text"
 			placeholder="GeoJSON URL"
 			class="url-input"
 			bind:value={addGeojson}
 			style="width: 100%; margin-top: 15px;"
-		/>
+		/> -->
 		<br />
-		<button style="margin-top: 5px;" on:click={() => addNewLayer()}>Add Layer</button>
+		<button style="margin-top: 5px;" on:click={async () => await addNewLayer()}>Add Layer</button>
 	</form>
 </AddLayer>
 
-{#if selectedFeatures.length > 0}
+{#if selectedFeatures.length > 0 || stac_api_layers.length > 0}
 	<div id="side-container">
-		<Accordion open={false}>
-			<span slot="head">Number of selected features: {selectedFeatures.length}</span>
-			<div slot="details">
-				{#each selectedFeatures.sort( (a, b) => a.properties.datetime.localeCompare(b.properties.datetime) ) as feature}
-					<p id="cid-list">
-						<a
-							href={`http://easier.umd.edu/browse/collections/landsat-c2l1/items/${feature.properties.filename.slice(
-								0,
-								-8
-							)}`}
-							target="_blank"
-						>
-							{feature.properties.filename}
-						</a>
-					</p>
-					<div>
-						<!-- svelte-ignore a11y-img-redundant-alt -->
-						<img
-							src={`https://landsatlook.usgs.gov/gen-browse?size=rrb&type=refl&product_id=${feature.properties.filename.slice(
-								0,
-								-8
-							)}`}
-							alt="Reflective Landsat Image"
-							style="max-width: 50%"
-						/>
+		{#if stac_api_layers.length > 0}
+			<h3>STAC API Layers</h3>
+			{#each stac_api_layers as endpoint}
+				<LayerAccordion open={false} {handle_delete} bind:endpoint={endpoint.url}>
+					<span slot="head">{endpoint.url}</span>
+					<div slot="details">
+						<table style="border-collapse: collapse;">
+							<thead>
+								<tr>
+									<th />
+									<th class="table">ID</th>
+									<th class="table">Title</th>
+									<th class="table">Render Asset</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Add dynamic content here based on the endpoint value -->
+								{#each endpoint.collections as collection}
+									<tr>
+										<td class="table">
+											<input type="checkbox" id="{endpoint.url}-collection1" />
+										</td>
+										<td class="table">{collection.id}</td>
+										<td class="table">{collection.title}</td>
+										<td class="table">
+											<select id={collection.id}>
+												{#if collection.features[0]}
+													{#each Object.keys(collection.features[0].assets) as asset}
+														<option value={asset}>{asset}</option>
+													{/each}
+												{:else}
+													<option value="">N/A</option>
+												{/if}
+											</select>
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
 					</div>
-				{/each}
+				</LayerAccordion>
+			{/each}
+			<hr style="margin-bottom: 30px;" />
+		{/if}
+		{#if selectedFeatures.length > 1}
+			<Accordion open={false}>
+				<span slot="head">Number of selected features: {selectedFeatures.length}</span>
+				<div slot="details">
+					{#each selectedFeatures.sort( (a, b) => a.properties.datetime.localeCompare(b.properties.datetime) ) as feature}
+						<p id="cid-list">
+							<a
+								href={`http://easier.umd.edu/browse/collections/landsat-c2l1/items/${feature.properties.filename.slice(
+									0,
+									-8
+								)}`}
+								target="_blank"
+							>
+								{feature.properties.filename}
+							</a>
+						</p>
+						<div>
+							<!-- svelte-ignore a11y-img-redundant-alt -->
+							<img
+								src={`https://landsatlook.usgs.gov/gen-browse?size=rrb&type=refl&product_id=${feature.properties.filename.slice(
+									0,
+									-8
+								)}`}
+								alt="Reflective Landsat Image"
+								style="max-width: 50%"
+							/>
+						</div>
+					{/each}
+				</div>
+			</Accordion>
+			<h4>Code</h4>
+			<h5>
+				Import <a href="https://pypi.org/project/ipfs-stac/" target="_blank">ipfs-stac</a> client
+			</h5>
+			<div class="side-snippet">
+				<p>from ipfs_stac import client</p>
 			</div>
-		</Accordion>
-		<h4>Code</h4>
-		<h5>
-			Import <a href="https://pypi.org/project/ipfs-stac/" target="_blank">ipfs-stac</a> client
-		</h5>
-		<div class="side-snippet">
-			<p>from ipfs_stac import client</p>
-		</div>
-		<h5>Connect to STAC server and fetch CIDs</h5>
-		<div class="side-snippet">
-			<p>
-				my_client = client.Web3(stac_endpoint="{stac_endpoint}", local_gateway="127.0.0.1")
-				<br />
-				<br />
-				assets = [] <br />
-				cidArray = {JSON.stringify(cidArray)}
-				<br />
-				<br />
-				for x in cidArray: <br />
-				&emsp; data = my_client.getFromCID(x) <br />
-				&emsp; assets.append(data)
-			</p>
-		</div>
-		<h5>Interface</h5>
-		<div>
-			<button on:click={connectWallet}>Fetch From Cold Storage</button>
-			<button id="multiPin">Multi Pin</button>
-			<button id="export">Export</button>
-			<p id="cidArray" class="hidden">{JSON.stringify(cidArray)}</p>
-			<p id="exportFeatures" class="hidden">{JSON.stringify(exportfeatures)}</p>
-		</div>
+			<h5>Connect to STAC server and fetch CIDs</h5>
+			<div class="side-snippet">
+				<p>
+					my_client = client.Web3(stac_endpoint="{stac_endpoint}", local_gateway="127.0.0.1")
+					<br />
+					<br />
+					assets = [] <br />
+					cidArray = {JSON.stringify(cidArray)}
+					<br />
+					<br />
+					for x in cidArray: <br />
+					&emsp; data = my_client.getFromCID(x) <br />
+					&emsp; assets.append(data)
+				</p>
+			</div>
+			<h5>Interface</h5>
+			<div>
+				<button on:click={connectWallet}>Fetch From Cold Storage</button>
+				<button id="multiPin">Multi Pin</button>
+				<button id="export">Export</button>
+				<p id="cidArray" class="hidden">{JSON.stringify(cidArray)}</p>
+				<p id="exportFeatures" class="hidden">{JSON.stringify(exportfeatures)}</p>
+			</div>
+		{/if}
 	</div>
 {/if}
 
@@ -894,5 +937,10 @@
 
 	.dealRow th {
 		padding-left: 15px;
+	}
+
+	.table {
+		border: 1px solid black;
+		padding: 2px;
 	}
 </style>
