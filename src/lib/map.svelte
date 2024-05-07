@@ -172,7 +172,9 @@
 	async function addNewLayer(): Promise<void> {
 		let metadata: any = {
 			url: addStac,
-			collections: []
+			collections: [],
+			selected_asset: '',
+			selectedFeatures: []
 		};
 
 		const collections = await get_collections(addStac);
@@ -194,11 +196,75 @@
 			metadata.collections.push(collection_data);
 		}
 
+		metadata.selected_asset = Object.keys(metadata.collections[0].features[0].assets)[0];
+
 		console.log(metadata);
 		stac_api_layers = [...stac_api_layers, metadata];
+		console.log(stac_api_layers);
 
 		addStac = '';
 		showAddLayer = false;
+	}
+
+	async function toggleAsset(e: any, collection: any, asset: string) {
+		console.log(e.target.checked);
+		if (e.target.checked) {
+			console.log(collection, asset);
+			collection.selected_asset = asset;
+
+			let selectedFeatures: any = [];
+
+			collection.features.forEach((feature: any) => {
+				let feat = {
+					type: 'Feature',
+					properties: {
+						PATH: parseInt(feature.properties['landsat:wrs_path']),
+						ROW: parseInt(feature.properties['landsat:wrs_row']),
+						cid: feature.assets[asset]['alternate']['Filecoin']['href'].split('/')[2],
+						datetime: feature.properties['datetime'],
+						s3: feature.assets[asset]['alternate']['s3']['href'],
+						filename: feature.id,
+						ipfs_cid: feature.assets[asset]['alternate']['IPFS']['href'].split('/')[2]
+					},
+					geometry: feature.geometry
+				};
+				selectedFeatures.push(feat);
+			});
+
+			collection.selectedFeatures = selectedFeatures;
+
+			const geojson: any = {
+				type: 'FeatureCollection',
+				features: collection.selectedFeatures
+			};
+
+			console.log(geojson);
+
+			map.addSource(collection.id, {
+				type: 'geojson',
+				data: geojson
+			});
+
+			map.addLayer({
+				id: collection.id,
+				type: 'fill',
+				source: collection.id,
+				paint: {
+					'fill-color': 'grey',
+					'fill-opacity': 0.2,
+					'fill-outline-color': 'black'
+				}
+			});
+
+			map.on('click', collection.id, (e) => handleClick(e) as any);
+			map.on('mouseenter', collection.id, handleMouseEnter);
+			map.on('mouseleave', collection.id, handleMouseLeave);
+		} else {
+			map.removeLayer(collection.id);
+			map.removeSource(collection.id);
+			collection.selected_asset = '';
+			collection.selectedFeatures = [];
+		}
 	}
 
 	function setupLayer() {
@@ -772,12 +838,16 @@
 								{#each endpoint.collections as collection}
 									<tr>
 										<td class="table">
-											<input type="checkbox" id="{endpoint.url}-collection1" />
+											<input
+												type="checkbox"
+												id="{endpoint.url}-collection1"
+												on:change={(e) => toggleAsset(e, collection, collection.selected_asset)}
+											/>
 										</td>
 										<td class="table">{collection.id}</td>
 										<td class="table">{collection.title}</td>
 										<td class="table">
-											<select id={collection.id}>
+											<select id={collection.id} bind:value={collection.selected_asset}>
 												{#if collection.features[0]}
 													{#each Object.keys(collection.features[0].assets) as asset}
 														<option value={asset}>{asset}</option>
