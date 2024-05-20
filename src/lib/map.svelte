@@ -238,8 +238,6 @@
 				features: collection.selectedFeatures
 			};
 
-			console.log(geojson);
-
 			map.addSource(collection.id, {
 				type: 'geojson',
 				data: geojson
@@ -256,13 +254,26 @@
 				}
 			});
 
+			map.addLayer({
+				id: `${collection.id}-highlighted`,
+				type: 'fill',
+				source: collection.id,
+				paint: {
+					'fill-outline-color': 'black',
+					'fill-color': '#484896',
+					'fill-opacity': 0.75
+				},
+				filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
+			});
+
 			map.on('click', collection.id, (e) => handleClick(e) as any);
 			map.on('mouseenter', collection.id, handleMouseEnter);
 			map.on('mouseleave', collection.id, handleMouseLeave);
 		} else {
 			map.removeLayer(collection.id);
+			map.removeLayer(`${collection.id}-highlighted`);
 			map.removeSource(collection.id);
-			collection.selected_asset = '';
+			collection.selected_asset = asset;
 			collection.selectedFeatures = [];
 		}
 	}
@@ -361,8 +372,27 @@
 		}
 
 		if (bbox) {
+			// Get all layers
+			const layers = map.getStyle().layers;
+
+			// Get all layers that have rendered geometry
+			const addedLayers = layers.filter((layer) => {
+				return (
+					layer.type === 'fill' &&
+					map.queryRenderedFeatures(bbox, { layers: [layer.id] }).length > 0 &&
+					layer.id !== 'hillshade' &&
+					layer.id !== 'water' &&
+					layer.id !== 'LANDSAT_SCENE_OUTLINES-layer'
+				);
+			});
+
+			const renderedLayers = [
+				'LANDSAT_SCENE_OUTLINES-layer',
+				...addedLayers.map((layer) => layer.id)
+			];
+
 			const features = map.queryRenderedFeatures(bbox, {
-				layers: ['LANDSAT_SCENE_OUTLINES-layer']
+				layers: renderedLayers
 			});
 
 			// Construct export features
@@ -392,6 +422,14 @@
 				(feature) => `${feature.properties?.PATH}${feature.properties?.ROW}`
 			);
 
+			for (let i = 0; i < renderedLayers.length; i++) {
+				map.setFilter(`${renderedLayers[i]}-highlighted`, [
+					'in',
+					['concat', ['get', 'PATH'], ['get', 'ROW']],
+					['literal', mergedPathRows]
+				]);
+			}
+
 			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
 				'in',
 				['concat', ['get', 'PATH'], ['get', 'ROW']],
@@ -416,7 +454,13 @@
 			return;
 		}
 
-		map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+		console.log(feature);
+		let id =
+			feature.layer.id == 'LANDSAT_SCENE_OUTLINES-layer'
+				? 'LANDSAT_SCENE_OUTLINES-highlighted'
+				: `${feature.layer.id}-highlighted`;
+
+		map.setFilter(id, [
 			'all',
 			['==', 'PATH', feature.properties.PATH],
 			['==', 'ROW', feature.properties.ROW]
@@ -429,11 +473,7 @@
 			.addTo(map);
 
 		popup.on('close', function () {
-			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
-				'all',
-				['==', 'PATH', ''],
-				['==', 'ROW', '']
-			]);
+			map.setFilter(id, ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]);
 		});
 	}
 
@@ -804,14 +844,6 @@
 			style="width: 100%;"
 		/>
 		<br />
-		<!-- <input
-			type="text"
-			placeholder="GeoJSON URL"
-			class="url-input"
-			bind:value={addGeojson}
-			style="width: 100%; margin-top: 15px;"
-		/> -->
-		<br />
 		<button style="margin-top: 5px;" on:click={async () => await addNewLayer()}>Add Layer</button>
 	</form>
 </AddLayer>
@@ -822,7 +854,7 @@
 			<h3>STAC API Layers</h3>
 			{#each stac_api_layers as endpoint}
 				<LayerAccordion open={false} {handle_delete} bind:endpoint={endpoint.url}>
-					<span slot="head">{endpoint.url}</span>
+					<span slot="head">{endpoint.url.match(/:\/\/(.[^/]+)/)[1]}</span>
 					<div slot="details">
 						<table style="border-collapse: collapse;">
 							<thead>
