@@ -169,7 +169,6 @@
 		return data;
 	};
 
-	// to-do account for stac catalog url
 	async function addNewLayer(): Promise<void> {
 		let metadata: any = {
 			url: addStac,
