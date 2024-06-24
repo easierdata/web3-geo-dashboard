@@ -5,12 +5,14 @@
 	import { onMount, onDestroy } from 'svelte';
 	import type { Web3EnrichedMapboxFeature, metadata, RequestRedirect, RequestInit } from '../types';
 	import Modal from './modal.svelte';
-	import AddLayer from './addLayer.svelte';
+	import AddLayer from './components/addLayer.svelte';
 	import Sidebar from './components/sidebar.svelte';
 	import Accordion from './accordion.svelte';
 	import Searchbar from './components/searchbar.svelte';
+	import Veda from './components/veda.svelte';
 
 	let showModal = false;
+	let showVeda = false;
 
 	// Add layer modal values
 	let showAddLayer = false;
@@ -680,6 +682,22 @@
 			map.getCanvas().addEventListener('keydown', (e) => {
 				e.preventDefault();
 				if (e.key == 'Escape') {
+					const layers = map.getStyle().layers;
+
+					// Get all layers that have rendered geometry
+					const addedLayers = layers.filter((layer) => {
+						return layer.type === 'fill' && layer.id.includes('-highlighted');
+					});
+
+					const renderedLayers = [
+						'LANDSAT_SCENE_OUTLINES-layer',
+						...addedLayers.map((layer) => layer.id)
+					];
+
+					for (let i = 0; i < renderedLayers.length; i++) {
+						map.setFilter(`${renderedLayers[i]}`, ['in', ['==', 'PATH', ''], ['==', 'ROW', '']]);
+					}
+
 					map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
 						'all',
 						['==', 'PATH', ''],
@@ -809,6 +827,10 @@
 	{/if}
 </Modal>
 
+<Veda bind:showVeda>
+	<h2 slot="header">Export to Veda Frontmatter</h2>
+</Veda>
+
 <AddLayer bind:showAddLayer>
 	<center>
 		<h3>Add New Layer</h3>
@@ -836,6 +858,7 @@
 		{connectWallet}
 		{toggleAsset}
 		{handle_delete}
+		bind:showVeda
 	/>
 {/if}
 

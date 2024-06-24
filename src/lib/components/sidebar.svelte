@@ -10,6 +10,7 @@
 	export let connectWallet;
 	export let toggleAsset;
 	export let handle_delete;
+	export let showVeda: boolean;
 </script>
 
 <div id="side-container">
@@ -118,6 +119,11 @@
 			<button on:click={connectWallet}>Fetch From Cold Storage</button>
 			<button id="multiPin">Multi Pin</button>
 			<button id="export">Export</button>
+			<button
+				on:click={() => {
+					showVeda = true;
+				}}>Export to Veda Frontmatter</button
+			>
 			<p id="cidArray" class="hidden">{JSON.stringify(cidArray)}</p>
 			<p id="exportFeatures" class="hidden">{JSON.stringify(exportfeatures)}</p>
 		</div>
