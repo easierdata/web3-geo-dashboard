@@ -10,13 +10,40 @@
 	let name: string;
 	let description: string;
 
-	let thematics: string[]; // will be blank
-	let sources: string[]; // Will be gateway link to CID export
 	let featured: boolean;
 	let disabledExplore: boolean;
 	let sourceExclusive: string;
+	let geojson_endpoint: string;
 
-	let layers: any[];
+	const createExportContent = (): void => {
+		const mdx = `
+---
+id: ${export_id}
+name: '${name}'
+description: "${description}"
+media:
+  alt: ${name}
+  author:
+    name: EASIER
+    url: http://easierdata.org
+layers:
+  - id: ${export_id}
+    type: geojson
+    tileApiEndpoint: '${geojson_endpoint}'
+    name: ${name}
+    description: "${description}"
+---
+
+<Block>
+<Prose>
+# Description
+${description}
+</Prose>
+</Block>
+		`;
+		console.log(mdx);
+		alert('Exporting...');
+	};
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -69,7 +96,7 @@
 				style="width: 100%;"
 			/>
 			<br />
-			<button style="margin-top: 5px;" on:click={async () => alert('Exporting...')}>Export</button>
+			<button style="margin-top: 5px;" on:click={async () => createExportContent()}>Export</button>
 		</form>
 
 		<slot />
