@@ -42,6 +42,18 @@ ${description}
 </Block>
 		`;
 		console.log(mdx);
+
+		// Hacky way of downloading
+		const blob = new Blob([mdx], { type: 'text/markdown' });
+		const url = URL.createObjectURL(blob);
+		const hidden = document.createElement('a');
+		hidden.href = url;
+		hidden.download = `${name}.mdx`;
+		document.body.appendChild(hidden);
+		hidden.click();
+		document.body.removeChild(hidden);
+		URL.revokeObjectURL(url);
+
 		alert('Exporting...');
 	};
 </script>
@@ -64,6 +76,12 @@ ${description}
 				type="text"
 				placeholder="Dataset Name"
 				bind:value={name}
+				style="width: 100%; margin-bottom: 10px;"
+			/>
+			<input
+				type="text"
+				placeholder="Geojson Endpoint"
+				bind:value={geojson_endpoint}
 				style="width: 100%; margin-bottom: 10px;"
 			/>
 			<textarea
