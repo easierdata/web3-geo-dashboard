@@ -1,84 +1,111 @@
-## Sequence of events that that take place when a user interacts with the map
+## Project flowchart
+
+```mermaid
+graph LR
+    User[User]
+    Svelte((Svelte))
+    IPFS[IPFS]
+    STAC[SpatioTemporal Asset Catalog API]
+    API[API]
+    ThirdParty[3rd Party]
+    Kubo[Kubo]
+
+    User -->|Interactions| Svelte
+
+    Svelte <-->|RPC API| Kubo
+    Kubo <--> IPFS
+
+    Svelte <-->|RESTful API| STAC
+
+    Svelte <-->|RESTful API| API
+    API <-->|Filecoin Metadata| ThirdParty
+
+    style Svelte fill:#f60,stroke:#333,stroke-width:2px
+    style IPFS fill:#069,stroke:#333,stroke-width:2px
+    style STAC fill:#0cf,stroke:#333,stroke-width:2px
+    style API fill:#c9f,stroke:#333,stroke-width:2px
+    style ThirdParty fill:#c9f,stroke:#333,stroke-width:2px
+    style Kubo fill:#069,stroke:#333,stroke-width:2px
+```
+
+## Data ingestion
+
+```mermaid
+graph LR
+    Excel["Excel Sheet\n(CIDs)"]
+    S3["S3 Bucket"]
+    GeoJSON["GeoJSON"]
+    Mapbox["Mapbox"]
+    STAC["SpatioTemporal Asset Catalog API"]
+
+    Excel --> GeoJSON
+    S3 --> GeoJSON
+    GeoJSON --> Mapbox
+    GeoJSON --> STAC
+
+    classDef purple fill:#E6E6FA,stroke:#000,stroke-width:1px;
+    class Excel,S3,GeoJSON purple;
+
+    style Mapbox fill:#fff,stroke:#000,stroke-width:1px;
+    style STAC fill:#fff,stroke:#000,stroke-width:1px;
+```
+
+## Dashboard Geocoding (w/ API)
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant onMount Function
-    participant Map
-    participant handleClick Function
-    participant createPopupContent Function
-    participant Anonymous Function
-    onMount Function->>Map: Initializes Map and sets up event handlers
-    User->>Map: Clicks on 'LANDSAT_SCENE_OUTLINES-layer'
-    Map->>handleClick Function: Triggers handleClick(e)
-    handleClick Function->>createPopupContent Function: Calls createPopupContent(feature)
-    createPopupContent Function-->>handleClick Function: Returns popup content
-    handleClick Function-->>Map: Updates state or interacts with system
-    User->>Map: Closes Popup
-    Map->>Anonymous Function: Triggers 'close' event
-    Anonymous Function->>Map: Sets filter on 'LANDSAT_SCENE_OUTLINES-highlighted'
-    Map-->>User: Reflects changes (if any)
+    Dashboard->>+API: User search query
+    API->>+Google Geocoding: Search Query
+    Google Geocoding->>-API: Coordinates
+    API->>-Dashboard: Result (coordinates)
 ```
 
-## Flow chart of the different ways a user can interact with features on the map
-
-```mermaid
-graph LR
-    A[User interacts with map] --> B{Event type}
-    B -->|"click on feature"| C[Call handleClick function]
-    C--> D["filter 'LANDSAT_SCENE_OUTLINES-highlighted' layer" to selected feature]
-    D --> E[Call createPopupContent function]
-    E -->|User closes popup| F[Remove 'LANDSAT_SCENE_OUTLINES-highlighted' layer filter]
-    F --> G[Reset selectedFeatures and cidArray constants]
-    B -->|Select Multiple features| H["filter 'LANDSAT_SCENE_OUTLINES-highlighted' layer" to selected features]
-    H --> I{Check if key pressed is 'Escape'}
-    I -->|Yes| F
-    G --> K[User ends interaction]
-    I -->|No| K
-```
-
-## Sequence of events to create pop-up when a user clicks on a grid.
+## Dashboard metadata fetching (w/ Extension)
 
 ```mermaid
 sequenceDiagram
-    participant handleClick Event
-    participant createPopupContent Function
-    participant getPopupMetadata Function
-    participant API
-    handleClick Event->>createPopupContent Function: Ask for popup
-    createPopupContent Function->>getPopupMetadata Function: Calls getPopupMetadata(properties.cid)
-    getPopupMetadata Function->>API: Sends GET request to API
-    API-->>getPopupMetadata Function: Returns response
-    getPopupMetadata Function-->>createPopupContent Function: Returns metadata
-    createPopupContent Function-->>handleClick Event: Constructs Popup with metadata
+    User->>+Dashboard: User tile click
+    Dashboard->>+Extension: Trigger event handler
+    Extension->>+Kubo: CID (findprovs)
+    Kubo->>-Extension: IPFS Metadata
+    Dashboard->>+APIs: CID
+    APIs->>-Dashboard: Filecoin Metadata
+    Dashboard->>-User: Popup
 ```
 
-## Flowchart of a the API Request to fetch the metadata for a selected CID: getPopupMetadata Function
+## Pinning data
 
 ```mermaid
-graph LR
-    A[Start] --> B{Send GET request to API}
-    B -->|Response OK| C[Parse JSON and return data]
-    B -->|Response not OK| D[Throw error and return undefined]
-    C --> E[End]
-    D --> E
+sequenceDiagram
+    User->>+Dashboard: User pin
+    Dashboard->>+Extension: Trigger event handler
+    Extension->>+Kubo: RPC call /pin/add CID
+    Kubo->>-Extension: Success
+    Extension->>+Kubo: RPC call /files/cp CID
+    Kubo->>-Extension: Success
+    Dashboard->>-User: Success alert
 ```
 
-## Flowchart of the steps to build `<div>` element for the modal
+## Export
 
 ```mermaid
-graph LR
-    A[Start] --> B{Check if selectedFeatures.length > 0}
-    B -->|Yes| C[Create side-container div]
-    B -->|No| D[End]
-    C --> E[Create Accordion component]
-    E --> F[Display number of selected features]
-    F --> G[Sort selectedFeatures by datetime]
-    G --> H[For each feature, create a paragraph and a div]
-    H --> I[Create a link to the feature]
-    I --> J[Display the feature's filename]
-    J --> K[Create an image with a link to the feature's reflective Landsat image]
-    K --> L[Display code snippets]
-    L --> M[End]
+sequenceDiagram
+    User->>+Dashboard: User clicks export
+    Dashboard->>+Extension: Tileset as Formdata blob
+    Extension->>+Kubo: RPC call /add blob
+    Kubo->>-Extension: Success
+    Extension->>+Kubo: RPC call /files/cp CID
+    Kubo->>-Extension: Success
+    Dashboard->>-User: Success alert
+```
 
+## Download click
+
+```mermaid
+sequenceDiagram
+    User->>+Dashboard: User clicks download
+    Dashboard->>+Extension: Trigger event handler
+    Extension->>+Kubo: RPC call /get CID
+    Kubo->>-Extension: Success
+    Dashboard->>-User: Success alert
 ```
