@@ -5,10 +5,25 @@
 	import { onMount, onDestroy } from 'svelte';
 	import type { Web3EnrichedMapboxFeature, metadata, RequestRedirect, RequestInit } from '../types';
 	import Modal from './modal.svelte';
+	import AddLayer from './components/addLayer.svelte';
+	import Sidebar from './components/sidebar.svelte';
 	import Accordion from './accordion.svelte';
+	import Searchbar from './components/searchbar.svelte';
+	import Veda from './components/veda.svelte';
 
 	let showModal = false;
+	let showVeda = false;
+
+	// Add layer modal values
+	let showAddLayer = false;
+	let addStac = '';
+
+	let stac_api_layers: any[] = [];
+
 	let cid = '';
+	let stac_endpoint = 'http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/';
+	let geojson_endpoint =
+		'https://raw.githubusercontent.com/easierdata/web3-geo-dashboard/feat-custom-geojson/data_processing/cid_enriched.geojson';
 
 	let deals: any = {};
 	let providers: any = [];
@@ -19,10 +34,12 @@
 	let box: any;
 	let selectedFeatures: any[] = [];
 	let cidArray: string[] = [];
+	let exportfeatures: any[] = [];
 
 	let autocomplete: any;
 
 	let map: Map;
+
 	async function getPopupMetadata(cid: string): Promise<metadata | undefined> {
 		const requestOptions: RequestInit = {
 			method: 'GET',
@@ -97,10 +114,6 @@
 		pinButton.setAttribute('id', 'pinButton');
 		pinButton.textContent = 'Pin to local';
 
-		/*const downloadButton = document.createElement('button');
-		downloadButton.setAttribute('id', 'downloadButton');
-		downloadButton.textContent = 'Download Scene';*/
-
 		const fetchButton = document.createElement('button');
 		fetchButton.textContent = 'Fetch from cold storage';
 		fetchButton.addEventListener('click', connectWallet);
@@ -113,7 +126,6 @@
 		});
 
 		content.appendChild(pinButton);
-		// content.appendChild(downloadButton);
 		content.appendChild(fetchButton);
 		content.appendChild(codeButton);
 
@@ -153,35 +165,152 @@
 		}
 	}
 
+	const get_collections = async (url: string) => {
+		const response = await fetch(`${url}/collections`);
+		const data = await response.json();
+		return data;
+	};
+
+	async function addNewLayer(): Promise<void> {
+		let metadata: any = {
+			url: addStac,
+			collections: [],
+			selected_asset: '',
+			selectedFeatures: []
+		};
+
+		const collections = await get_collections(addStac);
+		console.log(collections.collections);
+
+		for (let x = 0; x < collections.collections.length; x++) {
+			const collection = collections.collections[x];
+			let collection_data = {
+				id: collection.id,
+				title: collection.title,
+				features: []
+			};
+
+			const features = await fetch(`${addStac}/collections/${collection.id}/items`);
+			const feature_data = await features.json();
+
+			collection_data.features = feature_data.features;
+			console.log(collection_data);
+			metadata.collections.push(collection_data);
+		}
+
+		metadata.selected_asset = Object.keys(metadata.collections[0].features[0].assets)[0];
+
+		console.log(metadata);
+		stac_api_layers = [...stac_api_layers, metadata];
+		console.log(stac_api_layers);
+
+		addStac = '';
+		showAddLayer = false;
+	}
+
+	async function toggleAsset(e: any, collection: any, asset: string) {
+		console.log(e.target.checked);
+		if (e.target.checked) {
+			console.log(collection, asset);
+			collection.selected_asset = asset;
+
+			let selectedFeatures: any = [];
+
+			collection.features.forEach((feature: any) => {
+				let feat = {
+					type: 'Feature',
+					properties: {
+						PATH: parseInt(feature.properties['landsat:wrs_path']),
+						ROW: parseInt(feature.properties['landsat:wrs_row']),
+						cid: feature.assets[asset]['alternate']['Filecoin']['href'].split('/')[2],
+						datetime: feature.properties['datetime'],
+						s3: feature.assets[asset]['alternate']['s3']['href'],
+						filename: feature.id,
+						ipfs_cid: feature.assets[asset]['alternate']['IPFS']['href'].split('/')[2]
+					},
+					geometry: feature.geometry
+				};
+				selectedFeatures.push(feat);
+			});
+
+			collection.selectedFeatures = selectedFeatures;
+
+			const geojson: any = {
+				type: 'FeatureCollection',
+				features: collection.selectedFeatures
+			};
+
+			map.addSource(collection.id, {
+				type: 'geojson',
+				data: geojson
+			});
+
+			map.addLayer({
+				id: collection.id,
+				type: 'fill',
+				source: collection.id,
+				paint: {
+					'fill-color': 'grey',
+					'fill-opacity': 0.2,
+					'fill-outline-color': 'black'
+				}
+			});
+
+			map.addLayer({
+				id: `${collection.id}-highlighted`,
+				type: 'fill',
+				source: collection.id,
+				paint: {
+					'fill-outline-color': 'black',
+					'fill-color': '#484896',
+					'fill-opacity': 0.75
+				},
+				filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
+			});
+
+			map.on('click', collection.id, (e) => handleClick(e, map) as any);
+			map.on('mouseenter', collection.id, handleMouseEnter);
+			map.on('mouseleave', collection.id, handleMouseLeave);
+		} else {
+			map.removeLayer(collection.id);
+			map.removeLayer(`${collection.id}-highlighted`);
+			map.removeSource(collection.id);
+			collection.selected_asset = asset;
+			collection.selectedFeatures = [];
+		}
+	}
+
 	function setupLayer() {
 		map.addSource('LANDSAT_SCENE_OUTLINES', {
-			type: 'vector',
-			url: 'mapbox://mnanas2004.alx6bsr0'
+			type: 'geojson',
+			data: geojson_endpoint
 		});
 
-		map.addLayer({
-			id: 'LANDSAT_SCENE_OUTLINES-layer',
-			type: 'fill',
-			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched4-49jvb4',
-			paint: {
-				'fill-color': 'grey',
-				'fill-opacity': 0.2,
-				'fill-outline-color': 'black'
+		map.on('sourcedata', function (e) {
+			if (e.sourceId === 'LANDSAT_SCENE_OUTLINES' && map.isSourceLoaded('LANDSAT_SCENE_OUTLINES')) {
+				map.addLayer({
+					id: 'LANDSAT_SCENE_OUTLINES-layer',
+					type: 'fill',
+					source: 'LANDSAT_SCENE_OUTLINES',
+					paint: {
+						'fill-color': 'grey',
+						'fill-opacity': 0.2,
+						'fill-outline-color': 'black'
+					}
+				});
+
+				map.addLayer({
+					id: 'LANDSAT_SCENE_OUTLINES-highlighted',
+					type: 'fill',
+					source: 'LANDSAT_SCENE_OUTLINES',
+					paint: {
+						'fill-outline-color': 'black',
+						'fill-color': '#484896',
+						'fill-opacity': 0.75
+					},
+					filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
+				});
 			}
-		});
-
-		map.addLayer({
-			id: 'LANDSAT_SCENE_OUTLINES-highlighted',
-			type: 'fill',
-			source: 'LANDSAT_SCENE_OUTLINES',
-			'source-layer': 'cid_enriched4-49jvb4',
-			paint: {
-				'fill-outline-color': 'black',
-				'fill-color': '#484896',
-				'fill-opacity': 0.75
-			},
-			filter: ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]
 		});
 	}
 
@@ -245,8 +374,37 @@
 		}
 
 		if (bbox) {
+			// Get all layers
+			const layers = map.getStyle().layers;
+
+			// Get all layers that have rendered geometry
+			const addedLayers = layers.filter((layer) => {
+				return (
+					layer.type === 'fill' &&
+					map.queryRenderedFeatures(bbox, { layers: [layer.id] }).length > 0 &&
+					layer.id !== 'hillshade' &&
+					layer.id !== 'water' &&
+					layer.id !== 'LANDSAT_SCENE_OUTLINES-layer'
+				);
+			});
+
+			const renderedLayers = [
+				'LANDSAT_SCENE_OUTLINES-layer',
+				...addedLayers.map((layer) => layer.id)
+			];
+
 			const features = map.queryRenderedFeatures(bbox, {
-				layers: ['LANDSAT_SCENE_OUTLINES-layer']
+				layers: renderedLayers
+			});
+
+			// Construct export features
+			exportfeatures = [];
+			features.forEach((feature) => {
+				exportfeatures.push({
+					type: 'Feature',
+					geometry: feature.geometry,
+					properties: feature.properties
+				});
 			});
 
 			features.forEach((feature) => {
@@ -266,6 +424,14 @@
 				(feature) => `${feature.properties?.PATH}${feature.properties?.ROW}`
 			);
 
+			for (let i = 0; i < renderedLayers.length; i++) {
+				map.setFilter(`${renderedLayers[i]}-highlighted`, [
+					'in',
+					['concat', ['get', 'PATH'], ['get', 'ROW']],
+					['literal', mergedPathRows]
+				]);
+			}
+
 			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
 				'in',
 				['concat', ['get', 'PATH'], ['get', 'ROW']],
@@ -277,7 +443,8 @@
 	}
 
 	async function handleClick(
-		e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }
+		e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] },
+		map: Map
 	) {
 		const coordinates = e.lngLat;
 		if (!e.features || !e.features.length) {
@@ -290,7 +457,13 @@
 			return;
 		}
 
-		map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
+		console.log(feature);
+		let id =
+			feature.layer.id == 'LANDSAT_SCENE_OUTLINES-layer'
+				? 'LANDSAT_SCENE_OUTLINES-highlighted'
+				: `${feature.layer.id}-highlighted`;
+
+		map.setFilter(id, [
 			'all',
 			['==', 'PATH', feature.properties.PATH],
 			['==', 'ROW', feature.properties.ROW]
@@ -303,11 +476,7 @@
 			.addTo(map);
 
 		popup.on('close', function () {
-			map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
-				'all',
-				['==', 'PATH', ''],
-				['==', 'ROW', '']
-			]);
+			map.setFilter(id, ['all', ['==', 'PATH', ''], ['==', 'ROW', '']]);
 		});
 	}
 
@@ -419,7 +588,49 @@
 		selectedFeatures = newFeatures;
 	}
 
+	// Custom layer button control
+	class LayerButton {
+		onAdd() {
+			const div = document.createElement('div');
+			div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+			div.innerHTML = `
+			<button>
+				<svg focusable="false" viewBox="0 0 24 24" aria-hidden="true" style="font-size: 20px;">
+					<path d="M4 18h16v-2H4v2zM4 13h16v-2H4v2zM4 6v2h16V6H4z"></path>
+				</svg>
+			</button>`;
+			div.addEventListener('contextmenu', (e) => e.preventDefault());
+			div.addEventListener('click', () => {
+				showAddLayer = true;
+				//addGeojson = '';
+				addStac = '';
+			});
+
+			return div;
+		}
+	}
+
+	function handle_delete(url: string) {
+		console.log(url);
+		const index = stac_api_layers.findIndex((layer: any) => layer.url === url);
+		console.log(index);
+		stac_api_layers = stac_api_layers.slice(0, index).concat(stac_api_layers.slice(index + 1));
+
+		console.log(stac_api_layers);
+	}
+
 	onMount(async () => {
+		const stac = sessionStorage.getItem('stac');
+		const geojson = sessionStorage.getItem('geojson');
+
+		if (stac && stac != '') {
+			stac_endpoint = stac;
+		}
+
+		if (geojson && geojson != '') {
+			geojson_endpoint = geojson;
+		}
+
 		const loader = new Loader({
 			apiKey: import.meta.env.VITE_GOOGLEAPIKEY,
 			version: 'weekly',
@@ -453,11 +664,16 @@
 			zoom: 3
 		});
 
+		const addLayerButton: any = new LayerButton();
+		const defaultControls = new mapboxgl.NavigationControl();
+		map.addControl(defaultControls, 'top-right');
+		map.addControl(addLayerButton, 'bottom-right');
+
 		map.on('load', () => {
 			canvas = map.getCanvasContainer();
 
 			setupLayer();
-			map.on('click', 'LANDSAT_SCENE_OUTLINES-layer', (e) => handleClick(e) as any);
+			map.on('click', 'LANDSAT_SCENE_OUTLINES-layer', (e) => handleClick(e, map) as any);
 			map.on('mouseenter', 'LANDSAT_SCENE_OUTLINES-layer', handleMouseEnter);
 			map.on('mouseleave', 'LANDSAT_SCENE_OUTLINES-layer', handleMouseLeave);
 
@@ -466,6 +682,22 @@
 			map.getCanvas().addEventListener('keydown', (e) => {
 				e.preventDefault();
 				if (e.key == 'Escape') {
+					const layers = map.getStyle().layers;
+
+					// Get all layers that have rendered geometry
+					const addedLayers = layers.filter((layer) => {
+						return layer.type === 'fill' && layer.id.includes('-highlighted');
+					});
+
+					const renderedLayers = [
+						'LANDSAT_SCENE_OUTLINES-layer',
+						...addedLayers.map((layer) => layer.id)
+					];
+
+					for (let i = 0; i < renderedLayers.length; i++) {
+						map.setFilter(`${renderedLayers[i]}`, ['in', ['==', 'PATH', ''], ['==', 'ROW', '']]);
+					}
+
 					map.setFilter('LANDSAT_SCENE_OUTLINES-highlighted', [
 						'all',
 						['==', 'PATH', ''],
@@ -492,30 +724,7 @@
 </script>
 
 <div class="search-container">
-	<i class="fa fa-search search-icon" />
-	<input
-		type="text"
-		name="autocomplete"
-		id="searchInput"
-		class="search-bar"
-		autocomplete="off"
-		placeholder="Search"
-		bind:value={searchTerm}
-		on:keydown={async (e) => {
-			await handleKeyDown(e);
-		}}
-	/>
-	<span
-		class="clear-button"
-		role="button"
-		tabindex="0"
-		on:click={clearSearch}
-		on:keydown={async (e) => {
-			await handleKeyDown(e);
-		}}
-	>
-		x
-	</span>
+	<Searchbar bind:searchTerm {handleKeyDown} {clearSearch} />
 </div>
 
 <div id="map" />
@@ -532,9 +741,7 @@
 		<h3>Connect to STAC server and fetch CID</h3>
 		<div class="snippet">
 			<p>
-				my_client =
-				client.Web3(stac_endpoint="http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/",
-				local_gateway="127.0.0.1")
+				my_client = client.Web3(stac_endpoint="{stac_endpoint}", local_gateway="127.0.0.1")
 				<br />
 				data = my_client.getFromCID("{cid}")
 			</p>
@@ -620,68 +827,39 @@
 	{/if}
 </Modal>
 
-{#if selectedFeatures.length > 0}
-	<div id="side-container">
-		<Accordion open={false}>
-			<span slot="head">Number of selected features: {selectedFeatures.length}</span>
-			<div slot="details">
-				{#each selectedFeatures.sort( (a, b) => a.properties.datetime.localeCompare(b.properties.datetime) ) as feature}
-					<p id="cid-list">
-						<a
-							href={`http://easier.umd.edu/browse/collections/landsat-c2l1/items/${feature.properties.filename.slice(
-								0,
-								-8
-							)}`}
-							target="_blank"
-						>
-							{feature.properties.filename}
-						</a>
-					</p>
-					<div>
-						<!-- svelte-ignore a11y-img-redundant-alt -->
-						<img
-							src={`https://landsatlook.usgs.gov/gen-browse?size=rrb&type=refl&product_id=${feature.properties.filename.slice(
-								0,
-								-8
-							)}`}
-							alt="Reflective Landsat Image"
-							style="max-width: 50%"
-						/>
-					</div>
-				{/each}
-			</div>
-		</Accordion>
-		<h4>Code</h4>
-		<h5>
-			Import <a href="https://pypi.org/project/ipfs-stac/" target="_blank">ipfs-stac</a> client
-		</h5>
-		<div class="side-snippet">
-			<p>from ipfs_stac import client</p>
-		</div>
-		<h5>Connect to STAC server and fetch CIDs</h5>
-		<div class="side-snippet">
-			<p>
-				my_client =
-				client.Web3(stac_endpoint="http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/",
-				local_gateway="127.0.0.1")
-				<br />
-				<br />
-				assets = [] <br />
-				cidArray = {JSON.stringify(cidArray)}
-				<br />
-				<br />
-				for x in cidArray: <br />
-				&emsp; data = my_client.getFromCID(x) <br />
-				&emsp; assets.append(data)
-			</p>
-		</div>
-		<h5>Interface</h5>
-		<div>
-			<button on:click={connectWallet}>Fetch From Cold Storage</button>
-			<button id="multiPin">Multi Pin</button>
-			<p id="cidArray" class="hidden">{JSON.stringify(cidArray)}</p>
-		</div>
-	</div>
+<Veda bind:showVeda>
+	<h2 slot="header">Export to Veda Frontmatter</h2>
+</Veda>
+
+<AddLayer bind:showAddLayer>
+	<center>
+		<h3>Add New Layer</h3>
+	</center>
+	<form>
+		<input
+			type="text"
+			placeholder="STAC API URL"
+			class="url-input"
+			bind:value={addStac}
+			style="width: 100%;"
+		/>
+		<br />
+		<button style="margin-top: 5px;" on:click={async () => await addNewLayer()}>Add Layer</button>
+	</form>
+</AddLayer>
+
+{#if selectedFeatures.length > 0 || stac_api_layers.length > 0}
+	<Sidebar
+		bind:stac_api_layers
+		bind:selectedFeatures
+		bind:stac_endpoint
+		bind:cidArray
+		bind:exportfeatures
+		{connectWallet}
+		{toggleAsset}
+		{handle_delete}
+		bind:showVeda
+	/>
 {/if}
 
 <style>
@@ -690,35 +868,7 @@
 		width: 100%;
 		height: 83%;
 	}
-	#side-container {
-		background-color: #f5f5f5;
-		text-align: center;
-		width: 50%;
-		word-wrap: break-word;
-		overflow: auto;
-		z-index: 2;
-	}
 
-	#cid-list {
-		font-size: 10px;
-	}
-
-	.hidden {
-		display: none;
-	}
-
-	.side-snippet {
-		background-color: #d2d2d2;
-		color: #1d1d1d;
-		border: solid;
-		border-color: #e0e0e0;
-		border-radius: 5px;
-		margin-left: 5px;
-		margin-right: 5px;
-		font-size: 10px;
-		text-align: left !important;
-		padding-left: 5px;
-	}
 	.search-container {
 		display: flex;
 		align-items: center;
@@ -728,23 +878,7 @@
 		left: 3rem;
 		z-index: 1;
 	}
-	.search-bar {
-		border-radius: 0.5rem;
-		height: 1.7rem;
-		width: 26%;
-		max-width: 16rem;
-		padding-left: 1.9rem;
-	}
-	.search-icon {
-		position: relative;
-		left: 1.5rem;
-	}
 
-	.clear-button {
-		margin-left: -1.2rem;
-		margin-top: -0.2rem;
-		cursor: pointer;
-	}
 	.snippet {
 		background-color: #f5f5f5;
 		color: #1d1d1d;
