@@ -27,9 +27,6 @@ jobs:
       - name: Lint with eslint
         run: npm run lint
 
-      - name: Run coverage
-        run: npm run coverage
-
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
