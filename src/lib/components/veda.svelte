@@ -11,9 +11,6 @@
 	let caption: string;
 	let description: string;
 
-	// let featured: boolean;
-	// let disabledExplore: boolean;
-	// let sourceExclusive: string;
 	let geojson_endpoint: string = 'http://ec2-54-172-212-55.compute-1.amazonaws.com/api/v1/pgstac/';
 	let dataset_endpoint: string;
 
@@ -64,7 +61,6 @@ ${description}
 		`;
 		console.log(mdx);
 
-		// Hacky way of downloading
 		const blob = new Blob([mdx], { type: 'text/markdown' });
 		const url = URL.createObjectURL(blob);
 		const hidden = document.createElement('a');
@@ -120,30 +116,6 @@ ${description}
 				bind:value={description}
 				style="width: 100%; margin-bottom: 10px;"
 			/>
-			<!-- <div class="checkRow">
-				<p>Featured</p>
-				<input
-					type="checkbox"
-					on:change={() => {
-						featured = !featured;
-					}}
-				/>
-			</div>
-			<div class="checkRow">
-				<p>Disabled Explore</p>
-				<input
-					type="checkbox"
-					on:change={() => {
-						disabledExplore = !disabledExplore;
-					}}
-				/>
-			</div> -->
-			<!-- <input
-				type="text"
-				placeholder="Source Exclusive"
-				bind:value={sourceExclusive}
-				style="width: 100%;"
-			/> -->
 			<br />
 			<button style="margin-top: 5px;" on:click={async () => createExportContent()}>Export</button>
 		</form>
@@ -192,8 +164,5 @@ ${description}
 	}
 	button {
 		display: block;
-	}
-	.checkRow {
-		display: flex;
 	}
 </style>
