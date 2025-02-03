@@ -623,8 +623,9 @@
 	}
 
 	onMount(async () => {
-		const stac = sessionStorage.getItem('stac');
-		const geojson = sessionStorage.getItem('geojson');
+		const urlParams = new URLSearchParams(window.location.search);
+		const stac = sessionStorage.getItem('stac') || urlParams.get('stac');
+		const geojson = sessionStorage.getItem('geojson') || urlParams.get('geojson');
 
 		if (stac && stac != '') {
 			stac_endpoint = stac;
